@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const cargoSchema = new mongoose.Schema(
+const userSchema = new mongoose.Schema(
     {
       account: {
         type: String,
@@ -28,6 +28,6 @@ const cargoSchema = new mongoose.Schema(
 );
 
 
-const User = mongoose.model('User', cargoSchema);
+const User = mongoose.model('User', userSchema);
 
 module.exports = User;

@@ -25,6 +25,13 @@ const cargoSchema = new mongoose.Schema(
         type: Date,
         default: Date.now,
       },
+      token: {
+        type:String,
+        // default:""
+      },
+      searchText: {
+        type:String,
+      },
     },
     {
       versionKey: false,
