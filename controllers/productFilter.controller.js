@@ -1,13 +1,12 @@
-const Platform = require("../models/platform.model");
+const ProductFilter = require("../models/productFilter.model");
 const { successHandler } = require("../server/handle");
 const appError = require("../server/appError");
 const checkMongoObjectId = require("../server/checkMongoObjectId");
 
 // create and save a new post
-exports.platformRate = async (req, res, next) => {
+exports.productFilter = async (req, res, next) => {
   try {
-    const { token } = req.body;
-    const userToken = await Platform.find({ token: ["1", token] });
+    const userToken = await ProductFilter.find({});
     if (!["", null, undefined].includes(userToken)) {
       successHandler(res, "success", userToken);
     }
@@ -16,22 +15,21 @@ exports.platformRate = async (req, res, next) => {
   }
 };
 
-exports.createModifyRate = async (req, res, next) => {
-  const { label, rate, token } = req.body;
-  const newPlatform = await Platform.create({
-    label,
-    rate,
+exports.createProductFilter = async (req, res, next) => {
+  const { category, token } = req.body;
+  const newPlatform = await ProductFilter.create({
+    category,
     token,
   });
   successHandler(res, "success", newPlatform);
 };
 
-exports.deleteModifyRate = async (req, res, next) => {
+exports.deleteProductFilter = async (req, res, next) => {
   const { id } = req.body;
-  const isCargo = await Platform.findById(id).exec();
+  const isCargo = await ProductFilter.findById(id).exec();
   if (!isCargo) {
     return next(appError(400, "刪除失敗，無此ID", next));
   }
-  await Platform.findByIdAndDelete(id);
+  await ProductFilter.findByIdAndDelete(id);
   successHandler(res, "刪除成功");
 };

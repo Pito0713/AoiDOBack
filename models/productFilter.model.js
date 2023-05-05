@@ -1,16 +1,12 @@
 const mongoose = require("mongoose");
-const platformSchema = new mongoose.Schema(
+const productFilterSchema = new mongoose.Schema(
   {
     id: {
       type: String,
     },
-    label: {
+    category: {
       type: String,
-      required: [true, "label 未填寫"],
-    },
-    rate: {
-      type: Number,
-      required: [true, "rate 未填寫"],
+      required: [true, "category 未填寫"],
     },
     createdAt: {
       type: Date,
@@ -27,6 +23,6 @@ const platformSchema = new mongoose.Schema(
   }
 );
 
-const platform = mongoose.model("platform", platformSchema);
+const productFilter = mongoose.model("productFilter", productFilterSchema);
 
-module.exports = platform;
+module.exports = productFilter;
