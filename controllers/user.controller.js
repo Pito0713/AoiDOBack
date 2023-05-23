@@ -1,9 +1,11 @@
-const User = require("../models/user.model");
-const { successHandler } = require("../server/handle");
-const appError = require("../server/appError");
-const checkMongoObjectId = require("../server/checkMongoObjectId");
-const bcryptjs = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+const User = require('../models/user.model');
+const Image = require('../models/image.model');
+const { successHandler } = require('../server/handle');
+const appError = require('../server/appError');
+const checkMongoObjectId = require('../server/checkMongoObjectId');
+const bcryptjs = require('bcryptjs');
+const request = require('request-promise');
+const jwt = require('jsonwebtoken');
 
 // create and save a new post
 exports.register = async (req, res, next) => {
@@ -11,7 +13,7 @@ exports.register = async (req, res, next) => {
     const { account, password } = req.body;
     const userRepeat = await User.findOne({ account });
     if (userRepeat) {
-      return next(appError(401, "帳號重複", next));
+      return next(appError(401, '帳號重複', next));
     }
     const token = jwt.sign({ account: account }, process.env.JWT_SECRET);
 
@@ -19,9 +21,18 @@ exports.register = async (req, res, next) => {
       account: account,
       password: bcryptjs.hashSync(password, 12),
       token: token,
+      uesrName: '',
+      birth: '',
+      phone: '',
+      addres: '',
+      mail: '',
+      photo: '',
+      city: '',
+      town: '',
+      cargo: '',
     });
 
-    successHandler(res, "success", user);
+    successHandler(res, 'success', user);
   } catch (err) {
     return next(appError(401, err, next));
   }
@@ -30,15 +41,15 @@ exports.register = async (req, res, next) => {
 exports.login = async (req, res, next) => {
   try {
     const { account, password } = req.body;
-    const user = await User.findOne({ account }).select("+password");
-    if (!["", null, undefined].includes(user)) {
+    const user = await User.findOne({ account }).select('+password');
+    if (!['', null, undefined].includes(user)) {
       const correct = await bcryptjs.compare(password, user.password);
       if (!user || !correct) {
-        return next(appError(401, "密碼錯誤", next));
+        return next(appError(401, '密碼錯誤', next));
       }
-      successHandler(res, "success", { user });
+      successHandler(res, 'success', { user });
     } else {
-      return next(appError(401, "無此帳號", next));
+      return next(appError(401, '無此帳號', next));
     }
   } catch (err) {
     return next(appError(401, err, next));
@@ -49,7 +60,7 @@ exports.handPassWord = async (req, res, next) => {
   const { oldPassWord, newPassWord, newPassWordAgain, token } = req.body;
   const data = { oldPassWord, newPassWord, newPassWordAgain, token };
 
-  const user = await User.findOne({ token }).select("+password");
+  const user = await User.findOne({ token }).select('+password');
   const oldPassWordCorrect = await bcryptjs.compare(
     data.oldPassWord,
     user.password
@@ -62,25 +73,87 @@ exports.handPassWord = async (req, res, next) => {
   const updateNewPassWord = bcryptjs.hashSync(data.newPassWord, 12);
 
   if (!oldPassWordCorrect) {
-    return next(appError(400, "舊密碼錯誤", next));
+    return next(appError(400, '舊密碼錯誤', next));
   }
   if (newPassWordCorrect) {
-    return next(appError(400, "新舊密碼不能相同", next));
+    return next(appError(400, '新舊密碼不能相同', next));
   }
   const editPassWord = await User.findByIdAndUpdate(user._id, {
     password: updateNewPassWord,
   });
-  successHandler(res, "success", editPassWord);
+  successHandler(res, 'success', editPassWord);
+};
+
+exports.userinfo = async (req, res, next) => {
+  const { token } = req.body;
+  const userId = await User.find({ token });
+
+  successHandler(res, 'success', userId);
 };
 
 exports.uploadUser = async (req, res, next) => {
-  const { nameValue, birth, phone, addres, mail } = req.body;
-  const userToken = await User.find({});
+  const { uesrName, birth, phone, addres, mail, photo, token, city, town } =
+    req.body;
+  const userId = await User.find({ token });
 
-  console;
-  // let b = userToken.filter((item) => item.id == id);
-  // let data = { id, token, count };
-  // const editChart = await Chart.findByIdAndUpdate(b[0]._id, data);
-  // console.log(editChart);
-  // successHandler(res, "success", editChart);
+  const editUser = await User.findByIdAndUpdate(userId[0]._id, {
+    uesrName: uesrName,
+    birth: birth,
+    phone: phone,
+    addres: addres,
+    mail: mail,
+    photo: photo,
+    token: token,
+    city: city,
+    town: town,
+  });
+
+  successHandler(res, 'success', editUser);
+};
+
+exports.uploadUserImage = async (req, res) => {
+  const encode_image = req.file.buffer.toString('base64');
+  var imgData = {};
+  let options = {
+    method: 'POST',
+    url: 'https://api.imgur.com/3/image',
+    headers: {
+      Authorization: 'Client-ID 65c720efa8c8d95',
+    },
+    formData: {
+      image: encode_image,
+    },
+  };
+
+  await request(options, function (error, response) {
+    if (error) throw new Error(error);
+    imgurRes = JSON.parse(response.body);
+    imgData = {
+      imageName: req.file.originalname,
+      imageUrl: imgurRes.data.link,
+    };
+  });
+  const newImage = await Image.create(imgData);
+  successHandler(res, 'success', imgData);
+};
+
+exports.uploadUserCoupon = async (req, res, next) => {
+  const { token } = req.body;
+  const userId = await User.find({ token });
+  console.log(userId);
+  console.log(req);
+
+  if (userId.length > 0) {
+    console.log(userId);
+    // const editUser = await User.findByIdAndUpdate(userId[0]._id, {
+
+    // });
+  } else {
+    // const createUser = await User.create({
+    //   token: token,
+    //   coupon: [],
+    // });
+  }
+
+  // successHandler(res, 'success', editUser);
 };

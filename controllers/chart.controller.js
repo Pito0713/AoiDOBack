@@ -1,8 +1,8 @@
-const Chart = require("../models/chart.model");
-const Product = require("../models/product.model");
-const { successHandler } = require("../server/handle");
-const appError = require("../server/appError");
-const checkMongoObjectId = require("../server/checkMongoObjectId");
+const Chart = require('../models/chart.model');
+const Product = require('../models/product.model');
+const { successHandler } = require('../server/handle');
+const appError = require('../server/appError');
+const checkMongoObjectId = require('../server/checkMongoObjectId');
 
 // create and save a new post
 exports.chartData = async (req, res, next) => {
@@ -14,11 +14,8 @@ exports.chartData = async (req, res, next) => {
 
     let targetAllChart = [];
     for (let i = (page - 1) * pagination; i < page * pagination; i++) {
-      console.log(allChart[i]);
-      allChart[i] ? targetAllChart.push(allChart[i]) : "";
+      allChart[i] ? targetAllChart.push(allChart[i]) : '';
     }
-
-    console.log(targetAllChart);
 
     if (targetAllChart.length > 0) {
       targetAllChart.forEach((e) => {
@@ -39,8 +36,8 @@ exports.chartData = async (req, res, next) => {
       });
     }
 
-    if (!["", null, undefined].includes(chartDataValue)) {
-      successHandler(res, "success", chartDataValue);
+    if (!['', null, undefined].includes(chartDataValue)) {
+      successHandler(res, 'success', chartDataValue);
     }
   } catch (err) {
     return next(appError(401, err, next));
@@ -57,14 +54,14 @@ exports.createChart = async (req, res, next) => {
   if (b.length > 0) {
     data.count = Number(b[0].count) + Number(count);
     const editCargo = await Chart.findByIdAndUpdate(b[0], data);
-    successHandler(res, "success", editCargo);
+    successHandler(res, 'success', editCargo);
   } else {
     const newChart = await Chart.create({
       id,
       token,
       count,
     });
-    successHandler(res, "success", newChart);
+    successHandler(res, 'success', newChart);
   }
 };
 
@@ -73,9 +70,18 @@ exports.uploadChart = async (req, res, next) => {
   const userToken = await Chart.find({});
   let b = userToken.filter((item) => item.id == id);
   let data = { id, token, count };
-  const editChart = await Chart.findByIdAndUpdate(b[0]._id, data);
-  console.log(editChart);
-  successHandler(res, "success", editChart);
+  if (b.length > 0) {
+    data.count = Number(b[0].count) + Number(count);
+    const editCargo = await Chart.findByIdAndUpdate(b[0], data);
+    successHandler(res, 'success', editCargo);
+  } else {
+    const newChart = await Chart.create({
+      id,
+      token,
+      count,
+    });
+    successHandler(res, 'success', newChart);
+  }
 };
 
 exports.deleteChart = async (req, res, next) => {
@@ -84,8 +90,8 @@ exports.deleteChart = async (req, res, next) => {
   let b = userToken.filter((item) => item.id == id);
   const isCargo = await Chart.findById(b[0]._id).exec();
   if (!isCargo) {
-    return next(appError(400, "刪除失敗，無此ID", next));
+    return next(appError(400, '刪除失敗，無此ID', next));
   }
   await Chart.findByIdAndDelete(isCargo._id);
-  successHandler(res, "刪除成功");
+  successHandler(res, '刪除成功');
 };

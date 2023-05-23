@@ -1,13 +1,13 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema(
   {
     account: {
       type: String,
-      required: [true, "帳號不能為空"],
+      required: [true, '帳號不能為空'],
     },
     password: {
       type: String,
-      required: [true, "密碼不能為空"],
+      required: [true, '密碼不能為空'],
       minlength: 8,
       minlength: 20,
       select: false,
@@ -22,6 +22,9 @@ const userSchema = new mongoose.Schema(
     nameValue: {
       type: String,
     },
+    uesrName: {
+      type: String,
+    },
     birth: {
       type: String || Date,
     },
@@ -32,7 +35,19 @@ const userSchema = new mongoose.Schema(
       type: String,
     },
     mail: {
-      type: Number,
+      type: String,
+    },
+    photo: {
+      type: String,
+    },
+    city: {
+      type: String,
+    },
+    town: {
+      type: String,
+    },
+    coupon: {
+      type: Array,
     },
   },
   {
@@ -42,6 +57,6 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model('User', userSchema);
 
 module.exports = User;

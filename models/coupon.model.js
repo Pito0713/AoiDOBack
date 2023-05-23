@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
-const cargoSchema = new mongoose.Schema(
+const couponSchema = new mongoose.Schema(
   {
     describe: {
       type: String,
       required: [true, 'describe 未填寫'],
     },
-    singNumber: {
+    discount: {
       type: String,
-      required: [true, 'singNumber 未填寫'],
+      required: [true, 'discount 未填寫'],
     },
     remark: {
       type: String,
@@ -24,10 +24,6 @@ const cargoSchema = new mongoose.Schema(
     createdAt: {
       type: Date,
       default: Date.now,
-    },
-    token: {
-      type: String,
-      // default:""
     },
     searchText: {
       type: String,
@@ -49,6 +45,6 @@ const cargoSchema = new mongoose.Schema(
   }
 );
 
-const Cargo = mongoose.model('Cargo', cargoSchema);
+const Coupon = mongoose.model('Coupon', couponSchema);
 
-module.exports = Cargo;
+module.exports = Coupon;
