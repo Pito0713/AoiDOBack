@@ -2,7 +2,6 @@ const User = require('../models/user.model');
 const Image = require('../models/image.model');
 const { successHandler } = require('../server/handle');
 const appError = require('../server/appError');
-const checkMongoObjectId = require('../server/checkMongoObjectId');
 const bcryptjs = require('bcryptjs');
 const request = require('request-promise');
 const jwt = require('jsonwebtoken');
@@ -29,7 +28,7 @@ exports.register = async (req, res, next) => {
       photo: '',
       city: '',
       town: '',
-      cargo: '',
+      coupon: '',
     });
 
     successHandler(res, 'success', user);
@@ -45,11 +44,11 @@ exports.login = async (req, res, next) => {
     if (!['', null, undefined].includes(user)) {
       const correct = await bcryptjs.compare(password, user.password);
       if (!user || !correct) {
-        return next(appError(401, '密碼錯誤', next));
+        return next(appError(400, '密碼錯誤', next));
       }
       successHandler(res, 'success', { user });
     } else {
-      return next(appError(401, '無此帳號', next));
+      return next(appError(400, '無此帳號', next));
     }
   } catch (err) {
     return next(appError(401, err, next));
@@ -87,8 +86,11 @@ exports.handPassWord = async (req, res, next) => {
 exports.userinfo = async (req, res, next) => {
   const { token } = req.body;
   const userId = await User.find({ token });
-
-  successHandler(res, 'success', userId);
+  if (userId) {
+    successHandler(res, 'success', userId);
+  } else {
+    return next(appError(400, '無此帳號', next));
+  }
 };
 
 exports.uploadUser = async (req, res, next) => {
@@ -135,25 +137,4 @@ exports.uploadUserImage = async (req, res) => {
   });
   const newImage = await Image.create(imgData);
   successHandler(res, 'success', imgData);
-};
-
-exports.uploadUserCoupon = async (req, res, next) => {
-  const { token } = req.body;
-  const userId = await User.find({ token });
-  console.log(userId);
-  console.log(req);
-
-  if (userId.length > 0) {
-    console.log(userId);
-    // const editUser = await User.findByIdAndUpdate(userId[0]._id, {
-
-    // });
-  } else {
-    // const createUser = await User.create({
-    //   token: token,
-    //   coupon: [],
-    // });
-  }
-
-  // successHandler(res, 'success', editUser);
 };

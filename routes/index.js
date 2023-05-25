@@ -7,7 +7,7 @@ const platformController = require('../controllers/platform.controller');
 const productController = require('../controllers/product.controller');
 const imageController = require('../controllers/image.controller');
 const productFilter = require('../controllers/productFilter.controller');
-const chartController = require('../controllers/chart.controller');
+const cartController = require('../controllers/cart.controller');
 const countryController = require('../controllers/country.controller');
 const multer = require('multer');
 
@@ -38,10 +38,6 @@ router.post(
   upload.single('file'),
   userController.uploadUserImage
 );
-router.post(
-  '/uploadUserCoupon',
-  handleErrorAsync(userController.uploadUserCoupon)
-);
 
 // Platform
 router.post('/platformRate', handleErrorAsync(platformController.platformRate));
@@ -54,11 +50,11 @@ router.delete(
   handleErrorAsync(platformController.deleteModifyRate)
 );
 
-// chart
-router.post('/chartData', handleErrorAsync(chartController.chartData));
-router.post('/createChart', handleErrorAsync(chartController.createChart));
-router.post('/uploadChart', handleErrorAsync(chartController.uploadChart));
-router.delete('/deleteChart', handleErrorAsync(chartController.deleteChart));
+// cart
+router.post('/cartData', handleErrorAsync(cartController.cartData));
+router.post('/createCart', handleErrorAsync(cartController.createCart));
+router.post('/uploadCart', handleErrorAsync(cartController.uploadCart));
+router.delete('/deleteCart', handleErrorAsync(cartController.deleteCart));
 
 // ProductFilter
 router.post('/productFilter', handleErrorAsync(productFilter.productFilter));

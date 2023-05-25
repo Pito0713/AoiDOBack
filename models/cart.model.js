@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const chartSchema = new mongoose.Schema(
+const mongoose = require('mongoose');
+const cartSchema = new mongoose.Schema(
   {
     id: {
       type: String,
@@ -22,6 +22,6 @@ const chartSchema = new mongoose.Schema(
   }
 );
 
-const chart = mongoose.model("chart", chartSchema);
+const cart = mongoose.model('cart', cartSchema);
 
-module.exports = chart;
+module.exports = cart;

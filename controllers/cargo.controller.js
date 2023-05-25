@@ -1,9 +1,7 @@
 const Cargo = require('../models/cargo.model');
 const { successHandler, successTotalHandler } = require('../server/handle');
 const appError = require('../server/appError');
-const checkMongoObjectId = require('../server/checkMongoObjectId');
 
-// create and save a new post
 exports.create = async (req, res, next) => {
   const { describe, singNumber, remark, startDate, endDate, token } = req.body;
   const newCargo = await Cargo.create({
@@ -13,6 +11,7 @@ exports.create = async (req, res, next) => {
     startDate,
     endDate,
     user,
+    token,
   });
   successHandler(res, 'success', newCargo);
 };

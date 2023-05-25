@@ -19,9 +19,6 @@ const userSchema = new mongoose.Schema(
     token: {
       type: String,
     },
-    nameValue: {
-      type: String,
-    },
     uesrName: {
       type: String,
     },
