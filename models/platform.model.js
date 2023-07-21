@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const platformSchema = new mongoose.Schema(
   {
     id: {
@@ -6,11 +6,13 @@ const platformSchema = new mongoose.Schema(
     },
     label: {
       type: String,
-      required: [true, "label 未填寫"],
     },
     rate: {
       type: Number,
-      required: [true, "rate 未填寫"],
+    },
+    isActive: {
+      type: Boolean,
+      default: false,
     },
     createdAt: {
       type: Date,
@@ -27,6 +29,6 @@ const platformSchema = new mongoose.Schema(
   }
 );
 
-const platform = mongoose.model("platform", platformSchema);
+const platform = mongoose.model('platform', platformSchema);
 
 module.exports = platform;

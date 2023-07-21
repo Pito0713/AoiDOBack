@@ -1,10 +1,19 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const productSchema = new mongoose.Schema(
   {
     describe: {
       type: String,
     },
+    searchText: {
+      type: String,
+    },
     category: {
+      type: String,
+    },
+    page: {
+      type: String,
+    },
+    pagination: {
       type: String,
     },
     price: {
@@ -19,11 +28,17 @@ const productSchema = new mongoose.Schema(
     imageUrl: {
       type: String,
     },
+    quantity: {
+      type: String,
+    },
+    isSort: {
+      type: Boolean,
+    },
   },
   {
     versionKey: false,
   }
 );
 
-const Product = mongoose.model("product", productSchema);
+const Product = mongoose.model('product', productSchema);
 module.exports = Product;

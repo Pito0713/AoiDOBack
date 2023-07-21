@@ -45,53 +45,65 @@ exports.cartData = async (req, res, next) => {
 };
 
 exports.createCart = async (req, res, next) => {
-  const { id, token, count } = req.body;
+  try {
+    const { id, token, count } = req.body;
 
-  const userToken = await Cart.find({});
-  let b = userToken.filter((item) => item.id == id);
-  let data = { id, token, count };
+    const userToken = await Cart.find({});
+    let b = userToken.filter((item) => item.id == id);
+    let data = { id, token, count };
 
-  if (b.length > 0) {
-    data.count = Number(b[0].count) + Number(count);
-    const editCargo = await Cart.findByIdAndUpdate(b[0], data);
-    successHandler(res, 'success', editCargo);
-  } else {
-    const newCart = await Cart.create({
-      id,
-      token,
-      count,
-    });
-    successHandler(res, 'success', newCart);
+    if (b.length > 0) {
+      data.count = Number(b[0].count) + Number(count);
+      const editCargo = await Cart.findByIdAndUpdate(b[0], data);
+      successHandler(res, 'success', editCargo);
+    } else {
+      const newCart = await Cart.create({
+        id,
+        token,
+        count,
+      });
+      successHandler(res, 'success', newCart);
+    }
+  } catch (err) {
+    return next(appError(401, err, next));
   }
 };
 
 exports.uploadCart = async (req, res, next) => {
-  const { id, token, count } = req.body;
-  const userToken = await Cart.find({});
-  let b = userToken.filter((item) => item.id == id);
-  let data = { id, token, count };
-  if (b.length > 0) {
-    data.count = Number(b[0].count) + Number(count);
-    const editCargo = await Cart.findByIdAndUpdate(b[0], data);
-    successHandler(res, 'success', editCargo);
-  } else {
-    const newCart = await Cart.create({
-      id,
-      token,
-      count,
-    });
-    successHandler(res, 'success', newCart);
+  try {
+    const { id, token, count } = req.body;
+    const userToken = await Cart.find({});
+    let b = userToken.filter((item) => item.id == id);
+    let data = { id, token, count };
+    if (b.length > 0) {
+      data.count = Number(b[0].count) + Number(count);
+      const editCargo = await Cart.findByIdAndUpdate(b[0], data);
+      successHandler(res, 'success', editCargo);
+    } else {
+      const newCart = await Cart.create({
+        id,
+        token,
+        count,
+      });
+      successHandler(res, 'success', newCart);
+    }
+  } catch (err) {
+    return next(appError(401, err, next));
   }
 };
 
 exports.deleteCart = async (req, res, next) => {
-  const { id, token } = req.body;
-  const userToken = await Cart.find({});
-  let b = userToken.filter((item) => item.id == id);
-  const isCargo = await Cart.findById(b[0]._id).exec();
-  if (!isCargo) {
-    return next(appError(400, '刪除失敗，無此ID', next));
+  try {
+    const { id } = req.body;
+    const userToken = await Cart.find({});
+    let b = userToken.filter((item) => item.id == id);
+    const isCargo = await Cart.findById(b[0]._id).exec();
+    if (!isCargo) {
+      return next(appError(400, '刪除失敗，無此ID', next));
+    }
+    await Cart.findByIdAndDelete(isCargo._id);
+    successHandler(res, '刪除成功');
+  } catch (err) {
+    return next(appError(401, err, next));
   }
-  await Cart.findByIdAndDelete(isCargo._id);
-  successHandler(res, '刪除成功');
 };

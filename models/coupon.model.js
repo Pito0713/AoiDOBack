@@ -3,11 +3,9 @@ const couponSchema = new mongoose.Schema(
   {
     describe: {
       type: String,
-      required: [true, 'describe 未填寫'],
     },
     discount: {
       type: String,
-      required: [true, 'discount 未填寫'],
     },
     remark: {
       type: String,
@@ -15,11 +13,9 @@ const couponSchema = new mongoose.Schema(
     },
     startDate: {
       type: Date,
-      required: [true, 'startDate 未填寫'],
     },
     endDate: {
       type: Date,
-      required: [true, 'endDate 未填寫'],
     },
     createdAt: {
       type: Date,
