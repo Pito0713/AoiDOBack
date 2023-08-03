@@ -101,7 +101,7 @@ exports.findAllUserBack = async (req, res, next) => {
     const allUserBack = await UserBack.find({});
     if (!['', null, undefined].includes(allUserBack)) {
       let target = allUserBack.filter((item) => {
-        if (item.id !== id) {
+        if (item._id.toString() !== id) {
           return {
             id: item.id,
             permission: item.permission,

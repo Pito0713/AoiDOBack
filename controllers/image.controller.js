@@ -1,6 +1,7 @@
-const { successHandler, errorHandler } = require('../server/handle');
+const { successHandler, successTotalHandler } = require('../server/handle');
 const Image = require('../models/image.model');
 const request = require('request-promise');
+const appError = require('../server/appError');
 
 exports.allImage = async (req, res) => {
   try {
@@ -30,6 +31,34 @@ exports.uploadImage = async (req, res) => {
       imgurRes = JSON.parse(response.body);
       imgData = {
         imageName: req.file.originalname,
+        imageUrl: imgurRes.data.link,
+      };
+    });
+    const newImage = await Image.create(imgData);
+    successHandler(res, 'success', imgData);
+  } catch (error) {
+    return next(appError(401, err, next));
+  }
+};
+
+exports.uploadWebImage = async (req, res) => {
+  const { image } = req.body;
+  try {
+    var imgData = {};
+    let options = {
+      method: 'POST',
+      url: 'https://api.imgur.com/3/image',
+      headers: {
+        Authorization: 'Client-ID 65c720efa8c8d95',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      form: { image: image.split(',')[1] },
+    };
+    await request(options, function (error, response) {
+      if (error) throw new Error(error);
+      imgurRes = JSON.parse(response.body);
+      imgData = {
+        imageName: new Date(),
         imageUrl: imgurRes.data.link,
       };
     });

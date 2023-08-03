@@ -5,15 +5,18 @@ const checkMongoObjectId = require('../server/checkMongoObjectId');
 
 exports.createCoupon = async (req, res, next) => {
   try {
-    const { describe, discount, remark, startDate, endDate } = req.body;
-    let user = [];
+    const { describe, discount, remark, startDate, endDate, count } = req.body;
+    let unUser = [];
+    let usered = [];
     const newCoupon = await Coupon.create({
       describe,
       discount,
       remark,
       startDate,
       endDate,
-      user: user,
+      user: unUser,
+      usered: usered,
+      count,
     });
     successHandler(res, 'success', newCoupon);
   } catch (error) {
@@ -33,23 +36,57 @@ exports.findAllCoupon = async (req, res, next) => {
   }
 };
 
+exports.findPersonalCoupon = async (req, res, next) => {
+  try {
+    const { id } = req.body;
+    const coupons = await Coupon.find({
+      user: { $in: [id] },
+    });
+    const couponsEd = await Coupon.find({
+      usered: { $in: [id] },
+    });
+    let targetED = couponsEd.map(function (item, index, array) {
+      return item.id;
+    });
+
+    let couponsFilter = coupons.filter((item) => !targetED.includes(item.id));
+
+    const currentDate = new Date();
+    let target = couponsFilter.filter((item) => {
+      const startDate = new Date(item.startDate);
+      const endDate = new Date(item.endDate);
+      return (
+        currentDate >= startDate && currentDate <= endDate && item.count > 0
+      );
+    });
+
+    if (!['', null, undefined].includes(target)) {
+      successHandler(res, 'success', target);
+    }
+  } catch (err) {
+    return next(appError(401, err, next));
+  }
+};
+
 exports.updateCoupon = async (req, res, next) => {
   try {
     const CouponId = req.params.id;
-    const { describe, discount, remark, startDate, endDate } = req.body;
-    const data = { describe, discount, remark, startDate, endDate };
-    console.log(data);
+    const { describe, discount, count, remark, startDate, endDate } = req.body;
+    const data = { describe, discount, remark, startDate, endDate, count };
     if (!data.describe) {
-      return next(appError(400, '內容不能為空', next));
+      return next(appError(400, '描述不能為空', next));
+    }
+    if (!data.count) {
+      return next(appError(400, '次數不能為空', next));
     }
     if (!data.discount) {
-      return next(appError(400, 'discount 不能為空', next));
+      return next(appError(400, '折扣價格不能為空', next));
     }
     if (!data.startDate) {
-      return next(appError(400, 'startDate 不能為空', next));
+      return next(appError(400, '開始時間不能為空', next));
     }
     if (!data.endDate) {
-      return next(appError(400, 'endDate 不能為空', next));
+      return next(appError(400, '結束時間不能為空', next));
     }
     const editCoupon = await Coupon.findByIdAndUpdate(CouponId, data);
     if (!editCoupon) {

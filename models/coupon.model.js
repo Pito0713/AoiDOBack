@@ -33,6 +33,12 @@ const couponSchema = new mongoose.Schema(
     user: {
       type: Array,
     },
+    usered: {
+      type: Array,
+    },
+    count: {
+      type: String,
+    },
   },
   {
     versionKey: false,

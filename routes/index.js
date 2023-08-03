@@ -12,6 +12,7 @@ const countryController = require('../controllers/country.controller');
 const carouselImgController = require('../controllers/carouselImg.controller');
 const aboutImgController = require('../controllers/aboutImg.controller');
 const mainImgController = require('../controllers/mainImg.controller');
+const orderController = require('../controllers/order.controller');
 const multer = require('multer');
 
 var upload = multer({
@@ -78,6 +79,10 @@ router.delete(
 router.post('/createCoupon', handleErrorAsync(couponController.createCoupon));
 router.post('/findAllCoupon', handleErrorAsync(couponController.findAllCoupon));
 router.post('/searchCoupon', handleErrorAsync(couponController.searchCoupon));
+router.post(
+  '/findPersonalCoupon',
+  handleErrorAsync(couponController.findPersonalCoupon)
+);
 router.patch(
   '/updateCoupon/:id',
   handleErrorAsync(couponController.updateCoupon)
@@ -118,6 +123,10 @@ router.post(
 // img
 router.get('/allImage', handleErrorAsync(imageController.allImage));
 router.post('/uploadImage', upload.single('file'), imageController.uploadImage);
+router.post(
+  '/uploadWebImage',
+  handleErrorAsync(imageController.uploadWebImage)
+);
 
 // country
 router.post('/addCountry', handleErrorAsync(countryController.create));
@@ -160,7 +169,7 @@ router.patch(
   handleErrorAsync(aboutImgController.uploadAboutImg)
 );
 router.delete(
-  '/deleteOneAboutImg',
+  '/deleteOneAboutImg/:id',
   handleErrorAsync(aboutImgController.deleteOneAboutImg)
 );
 
@@ -183,7 +192,7 @@ router.patch(
   handleErrorAsync(mainImgController.uploadMainImg)
 );
 router.delete(
-  '/deleteOneMainImg',
+  '/deleteOneMainImg/:id',
   handleErrorAsync(mainImgController.deleteOneMainImg)
 );
 
@@ -215,6 +224,14 @@ router.post(
 router.patch(
   '/uploadUserPermission',
   handleErrorAsync(userBackController.uploadUserPermission)
+);
+
+// order
+router.post('/createOrder', handleErrorAsync(orderController.createOrder));
+router.post('/searchOrder', handleErrorAsync(orderController.searchOrder));
+router.delete(
+  '/deleteOneOrder/:id',
+  handleErrorAsync(orderController.deleteOneOrder)
 );
 
 module.exports = router;
