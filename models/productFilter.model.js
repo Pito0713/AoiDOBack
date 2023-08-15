@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const productFilterSchema = new mongoose.Schema(
   {
     id: {
@@ -6,7 +6,6 @@ const productFilterSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      required: [true, "category 未填寫"],
     },
     createdAt: {
       type: Date,
@@ -23,6 +22,6 @@ const productFilterSchema = new mongoose.Schema(
   }
 );
 
-const productFilter = mongoose.model("productFilter", productFilterSchema);
+const productFilter = mongoose.model('productFilter', productFilterSchema);
 
 module.exports = productFilter;

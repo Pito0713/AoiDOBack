@@ -4,7 +4,6 @@ const Product = require('../models/product.model');
 const Coupon = require('../models/coupon.model');
 const { successHandler, successTotalHandler } = require('../server/handle');
 const appError = require('../server/appError');
-const checkMongoObjectId = require('../server/checkMongoObjectId');
 
 exports.searchOrder = async (req, res, next) => {
   try {
@@ -20,7 +19,7 @@ exports.searchOrder = async (req, res, next) => {
       successTotalHandler(res, 'success', target, searchCoupon.length);
     }
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(404, 'Resource not found', next));
   }
 };
 
@@ -145,7 +144,7 @@ exports.createOrder = async (req, res, next) => {
     successHandler(res, 'success', newCart);
     await Cart.deleteMany({ token });
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(400, 'request failed', next));
   }
 };
 
@@ -154,12 +153,12 @@ exports.deleteOneOrder = async (req, res, next) => {
     const orderId = req.params.id;
     const isOrder = await Order.findById(orderId).exec();
     if (!isOrder) {
-      return next(appError(400, '刪除失敗，無此ID', next));
+      return next(appError(404, '_id resource not found', next));
     }
 
     await Order.findByIdAndDelete(isOrder._id);
-    successHandler(res, '刪除成功');
+    successHandler(res, 'success');
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(400, 'request failed', next));
   }
 };

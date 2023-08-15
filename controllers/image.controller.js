@@ -8,7 +8,7 @@ exports.allImage = async (req, res) => {
     const allImage = await Image.find();
     successHandler(res, 'success', allImage);
   } catch (error) {
-    return next(appError(401, err, next));
+    return next(appError(404, 'Resource not found', next));
   }
 };
 
@@ -37,7 +37,7 @@ exports.uploadImage = async (req, res) => {
     const newImage = await Image.create(imgData);
     successHandler(res, 'success', imgData);
   } catch (error) {
-    return next(appError(401, err, next));
+    return next(appError(400, 'request failed', next));
   }
 };
 
@@ -65,6 +65,6 @@ exports.uploadWebImage = async (req, res) => {
     const newImage = await Image.create(imgData);
     successHandler(res, 'success', imgData);
   } catch (error) {
-    return next(appError(401, err, next));
+    return next(appError(400, 'request failed', next));
   }
 };

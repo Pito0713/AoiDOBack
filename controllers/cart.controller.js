@@ -2,9 +2,7 @@ const Cart = require('../models/cart.model');
 const Product = require('../models/product.model');
 const { successHandler } = require('../server/handle');
 const appError = require('../server/appError');
-const checkMongoObjectId = require('../server/checkMongoObjectId');
 
-// create and save a new post
 exports.cartData = async (req, res, next) => {
   try {
     const { token, page, pagination } = req.body;
@@ -19,7 +17,7 @@ exports.cartData = async (req, res, next) => {
 
     if (targetAllCart.length > 0) {
       targetAllCart.forEach((e) => {
-        let cargo = allCargo.filter((item) => item.id == e.id);
+        let cargo = allCargo.filter((item) => item._id == e.id);
 
         let target = {
           category: cargo[0].category,
@@ -34,38 +32,55 @@ exports.cartData = async (req, res, next) => {
 
         cartDataValue.push(target);
       });
+    } else {
+      return next(appError(404, 'Resource not found', next));
     }
 
     if (!['', null, undefined].includes(cartDataValue)) {
       successHandler(res, 'success', cartDataValue);
     }
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(400, 'request failed', next));
   }
 };
 
 exports.createCart = async (req, res, next) => {
   try {
     const { id, token, count } = req.body;
+    const CartList = await Cart.find({});
+    if (CartList.length > 0) {
+      let CartItem = CartList.filter((item) => item.id == id).filter(
+        (item) => item.token == token
+      );
 
-    const userToken = await Cart.find({});
-    let b = userToken.filter((item) => item.id == id);
-    let data = { id, token, count };
-
-    if (b.length > 0) {
-      data.count = Number(b[0].count) + Number(count);
-      const editCargo = await Cart.findByIdAndUpdate(b[0], data);
-      successHandler(res, 'success', editCargo);
+      const productItem = await Product.findById(id).exec();
+      const newCount = Number(productItem.quantity) - Number(count);
+      if (newCount >= 0) {
+        if (CartItem.length > 0) {
+          await Product.updateOne(
+            { _id: id },
+            { $set: { quantity: newCount } }
+          );
+          let data = { id, token, count };
+          data.count = Number(CartItem[0].count) + Number(count);
+          const editCargo = await Cart.findByIdAndUpdate(CartItem[0], data);
+          successHandler(res, 'success', editCargo);
+        } else {
+          const newCart = await Cart.create({
+            id,
+            token,
+            count,
+          });
+          successHandler(res, 'success', newCart);
+        }
+      } else {
+        return next(appError(404, 'stock not enough', next));
+      }
     } else {
-      const newCart = await Cart.create({
-        id,
-        token,
-        count,
-      });
-      successHandler(res, 'success', newCart);
+      return next(appError(404, 'Resource not found', next));
     }
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(400, 'request failed', next));
   }
 };
 
@@ -73,22 +88,39 @@ exports.uploadCart = async (req, res, next) => {
   try {
     const { id, token, count } = req.body;
     const userToken = await Cart.find({});
-    let b = userToken.filter((item) => item.id == id);
-    let data = { id, token, count };
-    if (b.length > 0) {
-      data.count = Number(b[0].count) + Number(count);
-      const editCargo = await Cart.findByIdAndUpdate(b[0], data);
-      successHandler(res, 'success', editCargo);
+    if (userToken.length > 0) {
+      let userTokenTagert = userToken.filter((item) => item.id == id);
+      let data = { id, token, count };
+      const isCargo = await Product.findById(id).exec();
+      const newCount = Number(isCargo.quantity) - Number(count);
+      if (newCount > 0) {
+        if (userTokenTagert.length > 0) {
+          await Product.updateOne(
+            { _id: id },
+            { $set: { quantity: newCount } }
+          );
+          data.count = Number(userTokenTagert[0].count) + Number(count);
+          const editCargo = await Cart.findByIdAndUpdate(
+            userTokenTagert[0],
+            data
+          );
+          successHandler(res, 'success', editCargo);
+        } else {
+          const newCart = await Cart.create({
+            id,
+            token,
+            count,
+          });
+          successHandler(res, 'success', newCart);
+        }
+      } else {
+        return next(appError(404, 'stock not enough', next));
+      }
     } else {
-      const newCart = await Cart.create({
-        id,
-        token,
-        count,
-      });
-      successHandler(res, 'success', newCart);
+      return next(appError(404, 'Resource not found', next));
     }
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(400, 'request failed', next));
   }
 };
 
@@ -96,14 +128,24 @@ exports.deleteCart = async (req, res, next) => {
   try {
     const { id } = req.body;
     const userToken = await Cart.find({});
-    let b = userToken.filter((item) => item.id == id);
-    const isCargo = await Cart.findById(b[0]._id).exec();
-    if (!isCargo) {
-      return next(appError(400, '刪除失敗，無此ID', next));
+    if (userToken.length > 0) {
+      let userTokenTagert = userToken.filter((item) => item.id == id);
+      const isCargo = await Cart.findById(userTokenTagert[0]._id).exec();
+
+      const productItem = await Product.findById(id).exec();
+      if (!isCargo) {
+        return next(appError(404, '_id resource not found', next));
+      }
+      const newCount =
+        Number(productItem.quantity) + Number(userTokenTagert[0].count);
+
+      await Product.updateOne({ _id: id }, { $set: { quantity: newCount } });
+      await Cart.findByIdAndDelete(isCargo._id);
+      successHandler(res, 'success');
+    } else {
+      return next(appError(404, 'Resource not found', next));
     }
-    await Cart.findByIdAndDelete(isCargo._id);
-    successHandler(res, '刪除成功');
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(400, 'request failed', next));
   }
 };

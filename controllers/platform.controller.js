@@ -9,7 +9,7 @@ exports.platformRate = async (req, res, next) => {
       successHandler(res, 'success', userToken);
     }
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(404, 'Resource not found', next));
   }
 };
 
@@ -23,7 +23,7 @@ exports.createModifyRate = async (req, res, next) => {
     });
     successHandler(res, 'success', newPlatform);
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(400, 'request failed', next));
   }
 };
 
@@ -35,7 +35,7 @@ exports.updateModifyRate = async (req, res, next) => {
 
     successHandler(res, 'success');
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(404, '_id resource not found', next));
   }
 };
 
@@ -44,11 +44,11 @@ exports.deleteModifyRate = async (req, res, next) => {
     const { id } = req.body;
     const isCargo = await Platform.findById(id).exec();
     if (!isCargo) {
-      return next(appError(400, '刪除失敗，無此ID', next));
+      return next(appError(404, '_id resource not found', next));
     }
     await Platform.findByIdAndDelete(id);
-    successHandler(res, '刪除成功');
+    successHandler(res, 'success');
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(400, 'request failed', next));
   }
 };

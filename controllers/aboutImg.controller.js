@@ -1,19 +1,20 @@
 const AboutImg = require('../models/aboutImg.model');
 const { successHandler, successTotalHandler } = require('../server/handle');
 const appError = require('../server/appError');
-const checkMongoObjectId = require('../server/checkMongoObjectId');
 
-// create and save a new post
 exports.createAboutImg = async (req, res, next) => {
-  const { img, isActive } = req.body;
-  const newAboutImg = await AboutImg.create({
-    img,
-    isActive,
-  });
-  successHandler(res, 'success', newAboutImg);
+  try {
+    const { img, isActive } = req.body;
+    const newAboutImg = await AboutImg.create({
+      img,
+      isActive,
+    });
+    successHandler(res, 'success', newAboutImg);
+  } catch (err) {
+    return next(appError(400, 'request failed', next));
+  }
 };
 
-// retrieve all posts from db
 exports.findAllAboutImg = async (req, res, next) => {
   try {
     const allAboutImg = await AboutImg.find({});
@@ -21,7 +22,7 @@ exports.findAllAboutImg = async (req, res, next) => {
       successHandler(res, 'success', allAboutImg);
     }
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(404, 'Resource not found', next));
   }
 };
 
@@ -31,22 +32,21 @@ exports.uploadAboutImg = async (req, res, next) => {
     await AboutImg.updateOne({ _id: id }, { isActive: isActive });
     successHandler(res, 'success');
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(400, '_id request failed', next));
   }
 };
 
-// delete a Coupon by id
 exports.deleteOneAboutImg = async (req, res, next) => {
   try {
     const AboutImgId = req.params.id;
     const isAboutImg = await AboutImg.findById(AboutImgId).exec();
     if (!isAboutImg) {
-      return next(appError(400, '刪除失敗，無此ID', next));
+      return next(appError(404, '_id resource not found', next));
     }
     await AboutImg.findByIdAndDelete(AboutImgId);
-    successHandler(res, '刪除成功');
+    successHandler(res, 'success');
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(400, 'request failed', next));
   }
 };
 
@@ -60,6 +60,6 @@ exports.findActiveAboutImg = async (req, res, next) => {
       successTotalHandler(res, 'success', searchCoupon);
     }
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(404, 'Resource not found', next));
   }
 };

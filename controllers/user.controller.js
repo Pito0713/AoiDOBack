@@ -22,7 +22,7 @@ exports.register = async (req, res, next) => {
 
     const userRepeat = await User.findOne({ account });
     if (userRepeat) {
-      return next(appError(401, '帳號重複', next));
+      return next(appError(404, 'account is not exist', next));
     }
     const token = jwt.sign({ account: account }, process.env.JWT_SECRET);
 
@@ -43,7 +43,7 @@ exports.register = async (req, res, next) => {
 
     successHandler(res, 'success', user);
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(400, 'request failed', next));
   }
 };
 
@@ -53,16 +53,18 @@ exports.login = async (req, res, next) => {
     const user = await User.findOne({ account }).select('+password');
 
     if (!['', null, undefined].includes(user)) {
-      const correct = bcryptjs.compare(password, user.password);
-      if (!user || !correct) {
-        return next(appError(400, '密碼錯誤', next));
-      }
-      successHandler(res, 'success', { user });
+      bcryptjs.compare(password, user.password).then((result) => {
+        if (result) {
+          successHandler(res, 'success', { user });
+        } else {
+          return next(appError(400, 'password error', next));
+        }
+      });
     } else {
-      return next(appError(400, '無此帳號', next));
+      return next(appError(404, 'account is not exist', next));
     }
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(400, 'request failed', next));
   }
 };
 
@@ -84,20 +86,22 @@ exports.handPassWord = async (req, res, next) => {
     const updateNewPassWord = bcryptjs.hashSync(data.newPassWord, 12);
 
     if (!oldPassWordCorrect) {
-      return next(appError(400, '舊密碼錯誤', next));
+      return next(appError(400, 'oldPassword failed', next));
     }
     if (newPassWordCorrect) {
-      return next(appError(400, '新舊密碼不能相同', next));
+      return next(
+        appError(400, 'oldPassword and newPassword  are the same', next)
+      );
     }
     if (newPassWord !== newPassWordAgain) {
-      return next(appError(400, '新密碼重複輸入錯誤', next));
+      return next(appError(400, 'newPassword failed', next));
     }
     const editPassWord = await User.findByIdAndUpdate(user._id, {
       password: updateNewPassWord,
     });
     successHandler(res, 'success', editPassWord);
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(400, 'request failed', next));
   }
 };
 
@@ -108,10 +112,10 @@ exports.userinfo = async (req, res, next) => {
     if (userId) {
       successHandler(res, 'success', userId);
     } else {
-      return next(appError(400, '無此帳號', next));
+      return next(appError(404, 'account is not exist', next));
     }
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(404, 'Resource not found', next));
   }
 };
 
@@ -135,7 +139,7 @@ exports.uploadUser = async (req, res, next) => {
 
     successHandler(res, 'success', editUser);
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(404, 'Resource not found', next));
   }
 };
 
@@ -165,6 +169,6 @@ exports.uploadUserImage = async (req, res) => {
     const newImage = await Image.create(imgData);
     successHandler(res, 'success', imgData);
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(400, 'request failed', next));
   }
 };

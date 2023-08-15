@@ -13,7 +13,7 @@ const isAuth = handleErrorAsync(async (req, res, next) => {
   }
 
   if (!token) {
-    return next(appError(401, '你尚未登入！', next));
+    return next(appError(400, '你尚未登入！', next));
   }
 
   const decoded = await new Promise((resolve, reject) => {

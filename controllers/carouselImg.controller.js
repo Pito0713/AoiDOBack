@@ -1,9 +1,7 @@
 const CarouselImg = require('../models/carouselImg.model');
 const { successHandler, successTotalHandler } = require('../server/handle');
 const appError = require('../server/appError');
-const checkMongoObjectId = require('../server/checkMongoObjectId');
 
-// create and save a new post
 exports.createCarouselImg = async (req, res, next) => {
   try {
     const { img, isActive } = req.body;
@@ -13,11 +11,10 @@ exports.createCarouselImg = async (req, res, next) => {
     });
     successHandler(res, 'success', newCarouselImg);
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(400, 'request failed', next));
   }
 };
 
-// retrieve all posts from db
 exports.findAllCarouselImg = async (req, res, next) => {
   try {
     const allCarouselImg = await CarouselImg.find();
@@ -25,7 +22,7 @@ exports.findAllCarouselImg = async (req, res, next) => {
       successHandler(res, 'success', allCarouselImg);
     }
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(404, 'Resource not found', next));
   }
 };
 
@@ -35,22 +32,21 @@ exports.uploadCarouselImg = async (req, res, next) => {
     await CarouselImg.updateOne({ _id: id }, { isActive: isActive });
     successHandler(res, 'success');
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(400, '_id request failed', next));
   }
 };
 
-// delete a Coupon by id
 exports.deleteOneCarouselImg = async (req, res, next) => {
   try {
     const CarouselImgId = req.params.id;
     const isCarouselImg = await CarouselImg.findById(CarouselImgId).exec();
     if (!isCarouselImg) {
-      return next(appError(400, '刪除失敗，無此ID', next));
+      return next(appError(404, '_id resource not found', next));
     }
     await CarouselImg.findByIdAndDelete(CarouselImgId);
-    successHandler(res, '刪除成功');
+    successHandler(res, 'success');
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(400, 'request failed', next));
   }
 };
 
@@ -64,6 +60,6 @@ exports.findActiveCarouselImg = async (req, res, next) => {
       successTotalHandler(res, 'success', searchCoupon);
     }
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(404, 'Resource not found', next));
   }
 };

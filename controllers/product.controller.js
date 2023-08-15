@@ -11,30 +11,36 @@ exports.allProduct = async (req, res) => {
       const allProduct = await Product.find({
         describe: { $regex: searchText },
       });
+      if (allProduct.length > 0) {
+        for (let i = (page - 1) * pagination; i < page * pagination; i++) {
+          !allProduct[i] ? '' : target.push(allProduct[i]);
+        }
 
-      for (let i = (page - 1) * pagination; i < page * pagination; i++) {
-        !allProduct[i] ? '' : target.push(allProduct[i]);
-      }
-
-      if (!['', null, undefined].includes(allProduct)) {
-        successTotalHandler(res, 'success', target, allProduct.length);
+        if (!['', null, undefined].includes(allProduct)) {
+          successTotalHandler(res, 'success', target, allProduct.length);
+        }
+      } else {
+        return next(appError(404, 'Resource not found', next));
       }
     } else {
       const allProduct = await Product.find({
         describe: { $regex: searchText },
         category: req.body?.['category[]'],
       });
-
-      let target = [];
-      for (let i = (page - 1) * pagination; i < page * pagination; i++) {
-        !allProduct[i] ? '' : target.push(allProduct[i]);
-      }
-      if (!['', null, undefined].includes(allProduct)) {
-        successTotalHandler(res, 'success', target, allProduct.length);
+      if (allProduct.length > 0) {
+        let target = [];
+        for (let i = (page - 1) * pagination; i < page * pagination; i++) {
+          !allProduct[i] ? '' : target.push(allProduct[i]);
+        }
+        if (!['', null, undefined].includes(allProduct)) {
+          successTotalHandler(res, 'success', target, allProduct.length);
+        }
+      } else {
+        return next(appError(404, 'Resource not found', next));
       }
     }
   } catch (error) {
-    return next(appError(401, err, next));
+    return next(appError(400, 'request failed', next));
   }
 };
 
@@ -53,7 +59,7 @@ exports.addProduct = async (req, res) => {
     });
     successHandler(res, 'success', newProduct);
   } catch (err) {
-    return next(appError(401, '缺少資料', next));
+    return next(appError(400, 'request failed', next));
   }
 };
 
@@ -72,26 +78,26 @@ exports.uploadProduct = async (req, res, next) => {
       quantity,
     };
     if (!data.describe) {
-      return next(appError(400, '內容不能為空', next));
+      return next(appError(400, 'describe request failed', next));
     }
     if (!data.price) {
-      return next(appError(400, 'price 不能為空', next));
+      return next(appError(400, 'price request failed', next));
     }
     if (!data.category) {
-      return next(appError(400, 'category 不能為空', next));
+      return next(appError(400, 'category request failed', next));
     }
     if (!data.quantity) {
-      return next(appError(400, 'quantity 不能為空', next));
+      return next(appError(400, 'quantity request failed', next));
     }
 
     const editCargo = await Product.findByIdAndUpdate(cargoId, data);
     if (!editCargo) {
-      return next(appError(400, '查無此ID，無法更新', next));
+      return next(appError(404, '_id resource not found', next));
     }
     const resultCargo = await Product.findById(editCargo).exec();
     successHandler(res, 'success', resultCargo);
   } catch (err) {
-    return next(appError(401, '缺少資料', next));
+    return next(appError(404, 'Resource not found', next));
   }
 };
 
@@ -100,12 +106,12 @@ exports.deleteProductOne = async (req, res, next) => {
     const cargoId = req.params.id;
     const isCargo = await Product.findById(cargoId).exec();
     if (!isCargo) {
-      return next(appError(400, '刪除失敗，無此ID', next));
+      return next(appError(404, '_id resource not found', next));
     }
     await Product.findByIdAndDelete(cargoId);
-    successHandler(res, '刪除成功');
+    successHandler(res, 'success');
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(404, 'Resource not found', next));
   }
 };
 
@@ -122,9 +128,9 @@ exports.deleteProductCategory = async (req, res, next) => {
       const isCargo = await Product.findById(target).exec();
       await Product.findByIdAndDelete(isCargo);
     }
-    successHandler(res, '刪除成功');
+    successHandler(res, 'success');
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(404, '_id resource not found', next));
   }
 };
 
@@ -140,10 +146,38 @@ exports.productDatabase = async (req, res) => {
       const allProduct = await Product.find({
         describe: { $regex: searchText },
       });
-      for (let i = (page - 1) * pagination; i < page * pagination; i++) {
-        !allProduct[i] ? '' : target.push(allProduct[i]);
+      if (allProduct.length > 0) {
+        for (let i = (page - 1) * pagination; i < page * pagination; i++) {
+          !allProduct[i] ? '' : target.push(allProduct[i]);
+        }
+        if (!['', null, undefined].includes(allProduct)) {
+          const compareFn = (a, b) => {
+            const priceA = parseInt(a.price);
+            const priceB = parseInt(b.price);
+
+            if (isSort === 'asc') {
+              return priceA - priceB; // 升序排序
+            } else {
+              return priceB - priceA; // 降序排序
+            }
+          };
+
+          target.sort(compareFn);
+          successTotalHandler(res, 'success', target, allProduct.length);
+        } else {
+          return next(appError(404, 'Resource not found', next));
+        }
       }
-      if (!['', null, undefined].includes(allProduct)) {
+    } else {
+      const allProduct = await Product.find({
+        describe: { $regex: searchText },
+        category: req.body?.['category[]'],
+      });
+      if (allProduct.length > 0) {
+        let target = [];
+        for (let i = (page - 1) * pagination; i < page * pagination; i++) {
+          !allProduct[i] ? '' : target.push(allProduct[i]);
+        }
         const compareFn = (a, b) => {
           const priceA = parseInt(a.price);
           const priceB = parseInt(b.price);
@@ -157,31 +191,11 @@ exports.productDatabase = async (req, res) => {
 
         target.sort(compareFn);
         successTotalHandler(res, 'success', target, allProduct.length);
+      } else {
+        return next(appError(404, 'Resource not found', next));
       }
-    } else {
-      const allProduct = await Product.find({
-        describe: { $regex: searchText },
-        category: req.body?.['category[]'],
-      });
-      let target = [];
-      for (let i = (page - 1) * pagination; i < page * pagination; i++) {
-        !allProduct[i] ? '' : target.push(allProduct[i]);
-      }
-      const compareFn = (a, b) => {
-        const priceA = parseInt(a.price);
-        const priceB = parseInt(b.price);
-
-        if (isSort === 'asc') {
-          return priceA - priceB; // 升序排序
-        } else {
-          return priceB - priceA; // 降序排序
-        }
-      };
-
-      target.sort(compareFn);
-      successTotalHandler(res, 'success', target, allProduct.length);
     }
   } catch (error) {
-    return next(appError(401, err, next));
+    return next(appError(400, 'request failed', next));
   }
 };

@@ -1,7 +1,6 @@
 const MainImg = require('../models/mainImg.model');
 const { successHandler, successTotalHandler } = require('../server/handle');
 const appError = require('../server/appError');
-const checkMongoObjectId = require('../server/checkMongoObjectId');
 
 exports.createMainImg = async (req, res, next) => {
   try {
@@ -12,7 +11,7 @@ exports.createMainImg = async (req, res, next) => {
     });
     successHandler(res, 'success', newMainImg);
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(400, 'request failed', next));
   }
 };
 
@@ -23,7 +22,7 @@ exports.findAllMainImg = async (req, res, next) => {
       successHandler(res, 'success', allMainImg);
     }
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(404, 'Resource not found', next));
   }
 };
 
@@ -34,7 +33,7 @@ exports.uploadMainImg = async (req, res, next) => {
 
     successHandler(res, 'success');
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(400, '_id request failed', next));
   }
 };
 
@@ -44,12 +43,12 @@ exports.deleteOneMainImg = async (req, res, next) => {
     const MainImgId = req.params.id;
     const isMainImg = await MainImg.findById(MainImgId).exec();
     if (!isMainImg) {
-      return next(appError(400, '刪除失敗，無此ID', next));
+      return next(appError(400, '_id request failed', next));
     }
     await MainImg.findByIdAndDelete(MainImgId);
-    successHandler(res, '刪除成功');
+    successHandler(res, 'success');
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(400, 'request failed', next));
   }
 };
 
@@ -63,6 +62,6 @@ exports.findActiveMainImg = async (req, res, next) => {
       successTotalHandler(res, 'success', searchCoupon);
     }
   } catch (err) {
-    return next(appError(401, err, next));
+    return next(appError(404, 'Resource not found', next));
   }
 };
