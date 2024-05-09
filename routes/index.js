@@ -32,11 +32,17 @@ var upload = multer({
 
 const handleErrorAsync = require('../server/handleErrorAsync');
 // user
+// 註冊
 router.post('/register', handleErrorAsync(userController.register));
+// 登入
 router.post('/login', handleErrorAsync(userController.login));
+// 變更密碼
 router.post('/handPassWord', handleErrorAsync(userController.handPassWord));
+// 取得個人資料
 router.post('/userinfo', handleErrorAsync(userController.userinfo));
+// 更新個人資料
 router.post('/uploadUser', handleErrorAsync(userController.uploadUser));
+// 更新個人圖片
 router.post(
   '/uploadUserImage',
   upload.single('file'),
@@ -59,12 +65,15 @@ router.delete(
 );
 
 // cart
+// 取得購物車
 router.post('/cartData', handleErrorAsync(cartController.cartData));
-router.post('/createCart', handleErrorAsync(cartController.createCart));
+// 更新購物車
 router.post('/uploadCart', handleErrorAsync(cartController.uploadCart));
+// 刪除購物車
 router.delete('/deleteCart', handleErrorAsync(cartController.deleteCart));
 
 // ProductFilter
+// 搜尋分類
 router.post('/productFilter', handleErrorAsync(productFilter.productFilter));
 router.post(
   '/createProductFilter',
@@ -76,21 +85,28 @@ router.delete(
 );
 
 // Coupon
+// 新增優惠卷
 router.post('/createCoupon', handleErrorAsync(couponController.createCoupon));
+// 取得優惠卷
 router.post('/findAllCoupon', handleErrorAsync(couponController.findAllCoupon));
+// 搜尋優惠卷
 router.post('/searchCoupon', handleErrorAsync(couponController.searchCoupon));
+// 取得個人優惠卷
 router.post(
   '/findPersonalCoupon',
   handleErrorAsync(couponController.findPersonalCoupon)
 );
+// 更新優惠卷
 router.patch(
   '/updateCoupon/:id',
   handleErrorAsync(couponController.updateCoupon)
 );
+// 更新優惠卷人數
 router.patch(
   '/updateCouponUser/:id',
   handleErrorAsync(couponController.updateCouponUser)
 );
+// 刪除優惠卷
 router.delete(
   '/deleteOneCoupon/:id',
   handleErrorAsync(couponController.deleteOneCoupon)
@@ -101,12 +117,15 @@ router.delete(
 );
 
 // Product
+// 搜尋全部商品
 router.post('/allProduct', handleErrorAsync(productController.allProduct));
 router.post('/addProduct', handleErrorAsync(productController.addProduct));
+// 更新商品
 router.post(
   '/uploadProduct',
   handleErrorAsync(productController.uploadProduct)
 );
+// 刪除商品
 router.delete(
   '/deleteProductOne/:id',
   handleErrorAsync(productController.deleteProductOne)
@@ -115,6 +134,7 @@ router.delete(
   '/deleteProductCategory',
   handleErrorAsync(productController.deleteProductCategory)
 );
+// 取得商品資料
 router.post(
   '/productDatabase',
   handleErrorAsync(productController.productDatabase)
@@ -123,6 +143,8 @@ router.post(
 // img
 router.get('/allImage', handleErrorAsync(imageController.allImage));
 router.post('/uploadImage', upload.single('file'), imageController.uploadImage);
+
+// 更新網頁圖片
 router.post(
   '/uploadWebImage',
   handleErrorAsync(imageController.uploadWebImage)
@@ -149,30 +171,34 @@ router.delete(
   '/deleteOneCarouselImg/:id',
   handleErrorAsync(carouselImgController.deleteOneCarouselImg)
 );
-
+// 取得啟動輪播圖
 router.get(
   '/findActiveCarouselImg',
   handleErrorAsync(carouselImgController.findActiveCarouselImg)
 );
 
 // About
+// 新增關於照片
 router.post(
   '/createAboutImg',
   handleErrorAsync(aboutImgController.createAboutImg)
 );
+// 取得關於照片
 router.get(
   '/findAllAboutImg',
   handleErrorAsync(aboutImgController.findAllAboutImg)
 );
+// 更新關於照片
 router.patch(
   '/uploadAboutImg',
   handleErrorAsync(aboutImgController.uploadAboutImg)
 );
+// 刪除關於照片
 router.delete(
   '/deleteOneAboutImg/:id',
   handleErrorAsync(aboutImgController.deleteOneAboutImg)
 );
-
+// 取得啟動關於圖片
 router.get(
   '/findActiveAboutImg',
   handleErrorAsync(aboutImgController.findActiveAboutImg)
@@ -196,6 +222,7 @@ router.delete(
   handleErrorAsync(mainImgController.deleteOneMainImg)
 );
 
+// 取得啟動主要圖片
 router.get(
   '/findActiveMainImg',
   handleErrorAsync(mainImgController.findActiveMainImg)
@@ -227,8 +254,11 @@ router.patch(
 );
 
 // order
+// 創建訂單
 router.post('/createOrder', handleErrorAsync(orderController.createOrder));
+// 搜尋訂單
 router.post('/searchOrder', handleErrorAsync(orderController.searchOrder));
+// 刪除訂單
 router.delete(
   '/deleteOneOrder/:id',
   handleErrorAsync(orderController.deleteOneOrder)

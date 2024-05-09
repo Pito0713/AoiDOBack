@@ -32,19 +32,16 @@ exports.cartData = async (req, res, next) => {
 
         cartDataValue.push(target);
       });
-    } else {
-      return next(appError(404, 'Resource not found', next));
     }
 
-    if (!['', null, undefined].includes(cartDataValue)) {
-      successHandler(res, 'success', cartDataValue);
-    }
+    successHandler(res, 'success', cartDataValue);
+
   } catch (err) {
     return next(appError(400, 'request failed', next));
   }
 };
 
-exports.createCart = async (req, res, next) => {
+exports.uploadCart = async (req, res, next) => {
   try {
     const { id, token, count } = req.body;
     const CartList = await Cart.find({});
@@ -84,45 +81,6 @@ exports.createCart = async (req, res, next) => {
   }
 };
 
-exports.uploadCart = async (req, res, next) => {
-  try {
-    const { id, token, count } = req.body;
-    const userToken = await Cart.find({});
-    if (userToken.length > 0) {
-      let userTokenTagert = userToken.filter((item) => item.id == id);
-      let data = { id, token, count };
-      const isCargo = await Product.findById(id).exec();
-      const newCount = Number(isCargo.quantity) - Number(count);
-      if (newCount > 0) {
-        if (userTokenTagert.length > 0) {
-          await Product.updateOne(
-            { _id: id },
-            { $set: { quantity: newCount } }
-          );
-          data.count = Number(userTokenTagert[0].count) + Number(count);
-          const editCargo = await Cart.findByIdAndUpdate(
-            userTokenTagert[0],
-            data
-          );
-          successHandler(res, 'success', editCargo);
-        } else {
-          const newCart = await Cart.create({
-            id,
-            token,
-            count,
-          });
-          successHandler(res, 'success', newCart);
-        }
-      } else {
-        return next(appError(404, 'stock not enough', next));
-      }
-    } else {
-      return next(appError(404, 'Resource not found', next));
-    }
-  } catch (err) {
-    return next(appError(400, 'request failed', next));
-  }
-};
 
 exports.deleteCart = async (req, res, next) => {
   try {

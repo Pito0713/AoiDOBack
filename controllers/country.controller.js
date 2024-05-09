@@ -2,6 +2,8 @@ const Country = require('../models/country.model');
 const { successHandler } = require('../server/handle');
 const appError = require('../server/appError');
 
+
+// 取得鄉鎮
 exports.allCountry = async (req, res, next) => {
   try {
     const allCountry = await Country.find({});

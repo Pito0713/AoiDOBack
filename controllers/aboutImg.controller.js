@@ -11,7 +11,7 @@ exports.createAboutImg = async (req, res, next) => {
     });
     successHandler(res, 'success', newAboutImg);
   } catch (err) {
-    return next(appError(400, 'request failed', next));
+    return next(appError(400, 'request_failed', next));
   }
 };
 
@@ -50,6 +50,7 @@ exports.deleteOneAboutImg = async (req, res, next) => {
   }
 };
 
+// 取得關於圖片
 exports.findActiveAboutImg = async (req, res, next) => {
   try {
     const searchCoupon = await AboutImg.find({

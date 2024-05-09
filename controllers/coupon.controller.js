@@ -2,6 +2,7 @@ const Coupon = require('../models/coupon.model');
 const { successHandler, successTotalHandler } = require('../server/handle');
 const appError = require('../server/appError');
 
+// 新增優惠卷
 exports.createCoupon = async (req, res, next) => {
   try {
     const { describe, discount, remark, startDate, endDate, count } = req.body;
@@ -151,7 +152,9 @@ exports.updateCouponUser = async (req, res, next) => {
     const { user } = req.body;
 
     const targetCoupon = await Coupon.findById(CouponId);
-    if (targetCoupon.length > 0) {
+    console.log(targetCoupon)
+    console.log(CouponId)
+    if (targetCoupon) {
       var targetCouponUser = targetCoupon?.user.filter(function (
         item,
         index,
@@ -171,7 +174,7 @@ exports.updateCouponUser = async (req, res, next) => {
         return next(appError(404, 'Resource not found', next));
       }
     } else {
-      return next(appError(404, '_id resource not found', next));
+      return next(appError(404, '_id resource not found111', next));
     }
   } catch (err) {
     return next(appError(400, 'request failed', next));

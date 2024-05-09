@@ -6,16 +6,17 @@ const bcryptjs = require('bcryptjs');
 const request = require('request-promise');
 const jwt = require('jsonwebtoken');
 
+// 註冊
 exports.register = async (req, res, next) => {
   try {
     const {
       account,
       password,
-      uesrName,
+      userName,
       birth,
       mail,
       phone,
-      addres,
+      address,
       city,
       town,
     } = req.body;
@@ -30,10 +31,10 @@ exports.register = async (req, res, next) => {
       account: account,
       password: bcryptjs.hashSync(password, 12),
       token: token,
-      uesrName: uesrName,
+      userName: userName,
       birth: birth,
       phone: phone,
-      addres: addres,
+      address: address,
       mail: mail,
       photo: '',
       city: city,
@@ -68,6 +69,7 @@ exports.login = async (req, res, next) => {
   }
 };
 
+// 變更密碼
 exports.handPassWord = async (req, res, next) => {
   try {
     const { oldPassWord, newPassWord, newPassWordAgain, token } = req.body;
@@ -105,6 +107,7 @@ exports.handPassWord = async (req, res, next) => {
   }
 };
 
+// 取得個人資料
 exports.userinfo = async (req, res, next) => {
   try {
     const { token } = req.body;
@@ -119,17 +122,18 @@ exports.userinfo = async (req, res, next) => {
   }
 };
 
+// 更新個人資料
 exports.uploadUser = async (req, res, next) => {
   try {
-    const { uesrName, birth, phone, addres, mail, photo, token, city, town } =
+    const { userName, birth, phone, address, mail, photo, token, city, town } =
       req.body;
     const userId = await User.find({ token });
 
     const editUser = await User.findByIdAndUpdate(userId[0]._id, {
-      uesrName: uesrName,
+      userName: userName,
       birth: birth,
       phone: phone,
-      addres: addres,
+      address: address,
       mail: mail,
       photo: photo,
       token: token,
@@ -143,6 +147,7 @@ exports.uploadUser = async (req, res, next) => {
   }
 };
 
+// 更新個人圖片
 exports.uploadUserImage = async (req, res) => {
   try {
     const encode_image = req.file.buffer.toString('base64');

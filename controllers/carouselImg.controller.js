@@ -49,7 +49,7 @@ exports.deleteOneCarouselImg = async (req, res, next) => {
     return next(appError(400, 'request failed', next));
   }
 };
-
+// 取得輪播圖
 exports.findActiveCarouselImg = async (req, res, next) => {
   try {
     const searchCoupon = await CarouselImg.find({

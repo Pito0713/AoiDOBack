@@ -9,7 +9,7 @@ exports.searchOrder = async (req, res, next) => {
   try {
     const { searchText, page, pagination } = req.body;
     const searchCoupon = await Order.find({
-      'infoData.uesrName': { $regex: searchText },
+      'infoData.userName': { $regex: searchText },
     });
     let target = [];
     for (let i = (page - 1) * pagination; i < page * pagination; i++) {
@@ -83,10 +83,10 @@ exports.createOrder = async (req, res, next) => {
         const newCount =
           Number(submitData.ProductList[i].quantity) -
             Number(submitData.CheckOutList[i].count) <
-          0
+            0
             ? 0
             : Number(submitData.ProductList[i].quantity) -
-              Number(submitData.CheckOutList[i].count);
+            Number(submitData.CheckOutList[i].count);
 
         await Product.updateOne(
           { _id: submitData.ProductList[i]._id },

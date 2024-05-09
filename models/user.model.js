@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema(
     token: {
       type: String,
     },
-    uesrName: {
+    userName: {
       type: String,
     },
     birth: {
@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema(
     phone: {
       type: Number,
     },
-    addres: {
+    address: {
       type: String,
     },
     mail: {

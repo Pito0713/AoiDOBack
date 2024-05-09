@@ -2,49 +2,40 @@ const { successHandler, successTotalHandler } = require('../server/handle');
 const Product = require('../models/product.model');
 const appError = require('../server/appError');
 
-exports.allProduct = async (req, res) => {
+// 搜尋全部商品
+exports.allProduct = async (req, res, next) => {
   try {
     const { searchText, category, page, pagination } = req.body;
-
-    if (['', null, undefined].includes(req.body?.['category[]'])) {
-      let target = [];
-      const allProduct = await Product.find({
-        describe: { $regex: searchText },
-      });
-      if (allProduct.length > 0) {
-        for (let i = (page - 1) * pagination; i < page * pagination; i++) {
-          !allProduct[i] ? '' : target.push(allProduct[i]);
-        }
-
-        if (!['', null, undefined].includes(allProduct)) {
-          successTotalHandler(res, 'success', target, allProduct.length);
-        }
-      } else {
-        return next(appError(404, 'Resource not found', next));
-      }
-    } else {
-      const allProduct = await Product.find({
+    // 分類判斷
+    if (!['', null, undefined].includes(req.body?.['category[]'])) {
+      submit = {
         describe: { $regex: searchText },
         category: req.body?.['category[]'],
-      });
+      }
+    } else {
+      submit = {
+        describe: { $regex: searchText },
+      }
+    }
+    const allProduct = await Product.find(submit);
+    if (Array.isArray(allProduct)) {
+      let target = [];
       if (allProduct.length > 0) {
-        let target = [];
         for (let i = (page - 1) * pagination; i < page * pagination; i++) {
           !allProduct[i] ? '' : target.push(allProduct[i]);
         }
-        if (!['', null, undefined].includes(allProduct)) {
-          successTotalHandler(res, 'success', target, allProduct.length);
-        }
-      } else {
-        return next(appError(404, 'Resource not found', next));
       }
+      successTotalHandler(res, 'success', target, allProduct.length);
+    } else {
+      return next(appError(404, 'Resource not found', next));
     }
   } catch (error) {
     return next(appError(400, 'request failed', next));
   }
 };
 
-exports.addProduct = async (req, res) => {
+// 新增商品
+exports.addProduct = async (req, res, next) => {
   try {
     const { describe, quantity, price, remark, token, imageUrl, category } =
       req.body;
@@ -63,6 +54,7 @@ exports.addProduct = async (req, res) => {
   }
 };
 
+// 更新商品
 exports.uploadProduct = async (req, res, next) => {
   try {
     const cargoId = req.body.id;

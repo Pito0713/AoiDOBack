@@ -2,6 +2,7 @@ const ProductFilter = require('../models/productFilter.model');
 const { successHandler } = require('../server/handle');
 const appError = require('../server/appError');
 
+// 搜尋分類
 exports.productFilter = async (req, res, next) => {
   try {
     const userToken = await ProductFilter.find({});
