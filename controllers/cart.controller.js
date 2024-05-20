@@ -6,6 +6,9 @@ const appError = require('../server/appError');
 exports.cartData = async (req, res, next) => {
   try {
     const { token, page, pagination } = req.body;
+    if (!token) {
+      return next(appError(401, 'user_certificate_error', next));
+    }
     const allCart = await Cart.find({ token });
     const allCargo = await Product.find({});
     const cartDataValue = [];
@@ -33,23 +36,27 @@ exports.cartData = async (req, res, next) => {
         cartDataValue.push(target);
       });
     }
-
     successHandler(res, 'success', cartDataValue);
-
   } catch (err) {
-    return next(appError(400, 'request failed', next));
+    return next(appError(404, 'resource_not_found', next));
   }
 };
 
 exports.uploadCart = async (req, res, next) => {
   try {
     const { id, token, count } = req.body;
+    if (!token) {
+      return next(appError(401, 'user_certificate_error', next));
+    }
     const CartList = await Cart.find({});
-    if (CartList.length > 0) {
-      let CartItem = CartList.filter((item) => item.id == id).filter(
+    if (CartList?.length > 0) {
+      let CartItem = []
+      // 先找商品id 然後再找出token使用者的資料
+      CartItem = CartList.filter((item) => item.id == id).filter(
         (item) => item.token == token
       );
 
+      // 找出商品
       const productItem = await Product.findById(id).exec();
       const newCount = Number(productItem.quantity) - Number(count);
       if (newCount >= 0) {
@@ -71,13 +78,13 @@ exports.uploadCart = async (req, res, next) => {
           successHandler(res, 'success', newCart);
         }
       } else {
-        return next(appError(404, 'stock not enough', next));
+        return next(appError(404, 'stock_not_enough', next));
       }
     } else {
-      return next(appError(404, 'Resource not found', next));
+      return next(appError(404, 'resource_not_found', next));
     }
   } catch (err) {
-    return next(appError(400, 'request failed', next));
+    return next(appError(400, 'request_failed', next));
   }
 };
 
@@ -85,25 +92,30 @@ exports.uploadCart = async (req, res, next) => {
 exports.deleteCart = async (req, res, next) => {
   try {
     const { id } = req.body;
-    const userToken = await Cart.find({});
-    if (userToken.length > 0) {
-      let userTokenTagert = userToken.filter((item) => item.id == id);
-      const isCargo = await Cart.findById(userTokenTagert[0]._id).exec();
+    const allCart = await Cart.find({});
+    if (allCart?.length > 0) {
+      let cartTarget = []
+      // 先找加入購物車商品id
+      cartTarget = allCart.filter((item) => item.id == id);
 
-      const productItem = await Product.findById(id).exec();
-      if (!isCargo) {
-        return next(appError(404, '_id resource not found', next));
+      if (cartTarget?.length === 0) {
+        return next(appError(400, 'request_failed', next));
       }
+      const CartItem = await Cart.findById(cartTarget[0]?._id).exec();
+      if (!CartItem) {
+        return next(appError(404, 'resource_not_found', next));
+      }
+      const productItem = await Product.findById(id).exec();
       const newCount =
-        Number(productItem.quantity) + Number(userTokenTagert[0].count);
-
+        Number(productItem.quantity) + Number(cartTarget[0].count);
+      // 更新原本商品的庫存
       await Product.updateOne({ _id: id }, { $set: { quantity: newCount } });
-      await Cart.findByIdAndDelete(isCargo._id);
+      await Cart.findByIdAndDelete(CartItem._id);
       successHandler(res, 'success');
     } else {
-      return next(appError(404, 'Resource not found', next));
+      return next(appError(404, 'resource_not_found', next));
     }
   } catch (err) {
-    return next(appError(400, 'request failed', next));
+    return next(appError(400, 'request_failed', next));
   }
 };

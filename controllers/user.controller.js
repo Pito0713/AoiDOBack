@@ -21,51 +21,58 @@ exports.register = async (req, res, next) => {
       town,
     } = req.body;
 
+    if (!account && !password && !userName) {
+      return next(appError(400, 'data_missing', next));
+    }
+
     const userRepeat = await User.findOne({ account });
     if (userRepeat) {
-      return next(appError(404, 'account is not exist', next));
+      successHandler(res, 'duplicate_user_account', '');
     }
+    // 產生該帳號的token憑證, 用env中的金鑰
     const token = jwt.sign({ account: account }, process.env.JWT_SECRET);
 
-    const user = await User.create({
+    await User.create({
       account: account,
-      password: bcryptjs.hashSync(password, 12),
+      password: bcryptjs.hashSync(password, 12), // 把密碼加密
       token: token,
       userName: userName,
       birth: birth,
       phone: phone,
       address: address,
       mail: mail,
-      photo: '',
+      photo: null,
       city: city,
       town: town,
-      coupon: '',
+      coupon: null,
     });
 
-    successHandler(res, 'success', user);
+    successHandler(res, 'success');
   } catch (err) {
-    return next(appError(400, 'request failed', next));
+    return next(appError(400, 'request_failed', next));
   }
 };
 
 exports.login = async (req, res, next) => {
   try {
     const { account, password } = req.body;
+    // 找到帳號 並且順便撈他的password
     const user = await User.findOne({ account }).select('+password');
 
     if (!['', null, undefined].includes(user)) {
+      // 兩者解密是否對應
       bcryptjs.compare(password, user.password).then((result) => {
         if (result) {
           successHandler(res, 'success', { user });
         } else {
-          return next(appError(400, 'password error', next));
+          return next(appError(400, 'password_error', next));
         }
       });
     } else {
-      return next(appError(404, 'account is not exist', next));
+      return next(appError(404, 'account_not_found', next));
     }
   } catch (err) {
-    return next(appError(400, 'request failed', next));
+    return next(appError(400, 'request_failed', next));
   }
 };
 
@@ -87,23 +94,27 @@ exports.handPassWord = async (req, res, next) => {
 
     const updateNewPassWord = bcryptjs.hashSync(data.newPassWord, 12);
 
+    // 原先密碼檢查
     if (!oldPassWordCorrect) {
-      return next(appError(400, 'oldPassword failed', next));
+      return next(appError(400, 'oldPassword_failed', next));
     }
+    // 新密碼檢查
     if (newPassWordCorrect) {
       return next(
-        appError(400, 'oldPassword and newPassword  are the same', next)
+        appError(400, 'oldPassword_and_newPassword_are_the_same', next)
       );
     }
+    // 新密碼重複輸入錯誤
     if (newPassWord !== newPassWordAgain) {
-      return next(appError(400, 'newPassword failed', next));
+      return next(appError(400, 'newPassword_failed', next));
     }
+
     const editPassWord = await User.findByIdAndUpdate(user._id, {
       password: updateNewPassWord,
     });
-    successHandler(res, 'success', editPassWord);
+    successHandler(res, 'success');
   } catch (err) {
-    return next(appError(400, 'request failed', next));
+    return next(appError(400, 'request_failed', next));
   }
 };
 
@@ -115,10 +126,10 @@ exports.userinfo = async (req, res, next) => {
     if (userId) {
       successHandler(res, 'success', userId);
     } else {
-      return next(appError(404, 'account is not exist', next));
+      return next(appError(404, 'resource_not_found', next));
     }
   } catch (err) {
-    return next(appError(404, 'Resource not found', next));
+    return next(appError(400, 'request_failed', next));
   }
 };
 
@@ -128,6 +139,10 @@ exports.uploadUser = async (req, res, next) => {
     const { userName, birth, phone, address, mail, photo, token, city, town } =
       req.body;
     const userId = await User.find({ token });
+
+    if (!token && !userName) {
+      return next(appError(400, 'data_missing', next));
+    }
 
     const editUser = await User.findByIdAndUpdate(userId[0]._id, {
       userName: userName,
@@ -143,7 +158,7 @@ exports.uploadUser = async (req, res, next) => {
 
     successHandler(res, 'success', editUser);
   } catch (err) {
-    return next(appError(404, 'Resource not found', next));
+    return next(appError(404, 'resource_not_found', next));
   }
 };
 
@@ -174,6 +189,6 @@ exports.uploadUserImage = async (req, res) => {
     const newImage = await Image.create(imgData);
     successHandler(res, 'success', imgData);
   } catch (err) {
-    return next(appError(400, 'request failed', next));
+    return next(appError(400, 'request_failed', next));
   }
 };

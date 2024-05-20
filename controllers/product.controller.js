@@ -6,7 +6,7 @@ const appError = require('../server/appError');
 exports.allProduct = async (req, res, next) => {
   try {
     const { searchText, category, page, pagination } = req.body;
-    // 分類判斷
+    // 是否分類判斷
     if (!['', null, undefined].includes(req.body?.['category[]'])) {
       submit = {
         describe: { $regex: searchText },
@@ -18,19 +18,16 @@ exports.allProduct = async (req, res, next) => {
       }
     }
     const allProduct = await Product.find(submit);
-    if (Array.isArray(allProduct)) {
-      let target = [];
-      if (allProduct.length > 0) {
-        for (let i = (page - 1) * pagination; i < page * pagination; i++) {
-          !allProduct[i] ? '' : target.push(allProduct[i]);
-        }
+    let target = [];
+    if (allProduct.length > 0) {
+      for (let i = (page - 1) * pagination; i < page * pagination; i++) {
+        !allProduct[i] ? '' : target.push(allProduct[i]);
       }
-      successTotalHandler(res, 'success', target, allProduct.length);
-    } else {
-      return next(appError(404, 'Resource not found', next));
     }
+    successTotalHandler(res, 'success', target, allProduct?.length ? allProduct?.length : 0);
+
   } catch (error) {
-    return next(appError(400, 'request failed', next));
+    return next(appError(400, 'request_failed', next));
   }
 };
 
@@ -50,14 +47,14 @@ exports.addProduct = async (req, res, next) => {
     });
     successHandler(res, 'success', newProduct);
   } catch (err) {
-    return next(appError(400, 'request failed', next));
+    return next(appError(400, 'request_failed', next));
   }
 };
 
 // 更新商品
 exports.uploadProduct = async (req, res, next) => {
   try {
-    const cargoId = req.body.id;
+    const productId = req.body.id;
     const { describe, price, quantity, remark, token, imageUrl, category } =
       req.body;
     const data = {
@@ -70,59 +67,61 @@ exports.uploadProduct = async (req, res, next) => {
       quantity,
     };
     if (!data.describe) {
-      return next(appError(400, 'describe request failed', next));
+      return next(appError(400, 'data_missing', next));
     }
     if (!data.price) {
-      return next(appError(400, 'price request failed', next));
+      return next(appError(400, 'data_missing', next));
     }
     if (!data.category) {
-      return next(appError(400, 'category request failed', next));
+      return next(appError(400, 'data_missing', next));
     }
     if (!data.quantity) {
-      return next(appError(400, 'quantity request failed', next));
+      return next(appError(400, 'data_missing', next));
     }
 
-    const editCargo = await Product.findByIdAndUpdate(cargoId, data);
-    if (!editCargo) {
-      return next(appError(404, '_id resource not found', next));
+    const editProduct = await Product.findByIdAndUpdate(productId, data);
+    if (!editProduct) {
+      return next(appError(404, 'resource_not_found', next));
     }
-    const resultCargo = await Product.findById(editCargo).exec();
+    const resultCargo = await Product.findById(editProduct).exec();
     successHandler(res, 'success', resultCargo);
   } catch (err) {
-    return next(appError(404, 'Resource not found', next));
+    return next(appError(400, 'request_failed', next));
   }
 };
 
 exports.deleteProductOne = async (req, res, next) => {
   try {
-    const cargoId = req.params.id;
-    const isCargo = await Product.findById(cargoId).exec();
-    if (!isCargo) {
-      return next(appError(404, '_id resource not found', next));
+    const productId = req.params.id;
+    const productItem = await Product.findById(productId).exec();
+    if (!productItem) {
+      return next(appError(404, 'resource_not_found', next));
     }
-    await Product.findByIdAndDelete(cargoId);
+    await Product.findByIdAndDelete(productId);
     successHandler(res, 'success');
   } catch (err) {
-    return next(appError(404, 'Resource not found', next));
+    return next(appError(400, 'request_failed', next));
   }
 };
 
 exports.deleteProductCategory = async (req, res, next) => {
   try {
-    let target = req.body?.['category[]'];
+    let target = []
+    target = req.body?.['category[]'];
 
     if (target?.length > 0 && Array.isArray(target)) {
-      for (let i = 0; target.length > i; i++) {
-        const isCargo = await Product.findById(target[i]).exec();
-        await Product.findByIdAndDelete(isCargo);
+      // 多筆資料
+      for (let i = 0; target?.length > i; i++) {
+        const productItem = await Product.findById(target[i]).exec();
+        await Product.findByIdAndDelete(productItem);
       }
     } else {
-      const isCargo = await Product.findById(target).exec();
-      await Product.findByIdAndDelete(isCargo);
+      const productItem = await Product.findById(target).exec();
+      await Product.findByIdAndDelete(productItem);
     }
     successHandler(res, 'success');
   } catch (err) {
-    return next(appError(404, '_id resource not found', next));
+    return next(appError(400, 'request_failed', next));
   }
 };
 
@@ -130,6 +129,7 @@ exports.productDatabase = async (req, res) => {
   try {
     const { searchText, category, page, pagination, isSort } = req.body;
 
+    // 有無用分類搜尋資料
     if (
       ['', null, undefined].includes(req.body?.['category[]']) ||
       req.body?.['category[]'] === '全部'
@@ -138,35 +138,33 @@ exports.productDatabase = async (req, res) => {
       const allProduct = await Product.find({
         describe: { $regex: searchText },
       });
-      if (allProduct.length > 0) {
+      if (allProduct?.length > 0 && Array.isArray(allProduct)) {
         for (let i = (page - 1) * pagination; i < page * pagination; i++) {
           !allProduct[i] ? '' : target.push(allProduct[i]);
         }
-        if (!['', null, undefined].includes(allProduct)) {
-          const compareFn = (a, b) => {
-            const priceA = parseInt(a.price);
-            const priceB = parseInt(b.price);
 
-            if (isSort === 'asc') {
-              return priceA - priceB; // 升序排序
-            } else {
-              return priceB - priceA; // 降序排序
-            }
-          };
+        const compareFn = (a, b) => {
+          const priceA = parseInt(a.price);
+          const priceB = parseInt(b.price);
 
-          target.sort(compareFn);
-          successTotalHandler(res, 'success', target, allProduct.length);
-        } else {
-          return next(appError(404, 'Resource not found', next));
-        }
+          if (isSort === 'asc') {
+            return priceA - priceB; // 升序排序
+          } else {
+            return priceB - priceA; // 降序排序
+          }
+        };
+
+        target.sort(compareFn);
+
       }
+      successTotalHandler(res, 'success', target, allProduct?.length ? allProduct.length : 0);
     } else {
+      let target = [];
       const allProduct = await Product.find({
         describe: { $regex: searchText },
         category: req.body?.['category[]'],
       });
-      if (allProduct.length > 0) {
-        let target = [];
+      if (allProduct?.length > 0 && Array.isArray(allProduct)) {
         for (let i = (page - 1) * pagination; i < page * pagination; i++) {
           !allProduct[i] ? '' : target.push(allProduct[i]);
         }
@@ -180,14 +178,11 @@ exports.productDatabase = async (req, res) => {
             return priceB - priceA; // 降序排序
           }
         };
-
         target.sort(compareFn);
-        successTotalHandler(res, 'success', target, allProduct.length);
-      } else {
-        return next(appError(404, 'Resource not found', next));
       }
+      successTotalHandler(res, 'success', target, allProduct?.length ? allProduct.length : 0);
     }
   } catch (error) {
-    return next(appError(400, 'request failed', next));
+    return next(appError(400, 'request_failed', next));
   }
 };

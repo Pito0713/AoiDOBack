@@ -33,7 +33,7 @@ const couponSchema = new mongoose.Schema(
     user: {
       type: Array,
     },
-    usered: {
+    userEd: {
       type: Array,
     },
     count: {

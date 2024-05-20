@@ -1,4 +1,4 @@
-const { successHandler, successTotalHandler } = require('../server/handle');
+const { successHandler } = require('../server/handle');
 const Image = require('../models/image.model');
 const request = require('request-promise');
 const appError = require('../server/appError');
@@ -8,7 +8,7 @@ exports.allImage = async (req, res) => {
     const allImage = await Image.find();
     successHandler(res, 'success', allImage);
   } catch (error) {
-    return next(appError(404, 'Resource not found', next));
+    return next(appError(404, 'resource_not_found', next));
   }
 };
 
@@ -35,9 +35,9 @@ exports.uploadImage = async (req, res) => {
       };
     });
     const newImage = await Image.create(imgData);
-    successHandler(res, 'success', imgData);
+    successHandler(res, 'success');
   } catch (error) {
-    return next(appError(400, 'request failed', next));
+    return next(appError(400, 'request_failed', next));
   }
 };
 
@@ -63,8 +63,8 @@ exports.uploadWebImage = async (req, res) => {
       };
     });
     const newImage = await Image.create(imgData);
-    successHandler(res, 'success', imgData);
+    successHandler(res, 'success');
   } catch (error) {
-    return next(appError(400, 'request failed', next));
+    return next(appError(400, 'request_failed', next));
   }
 };

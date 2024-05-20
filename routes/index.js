@@ -50,6 +50,7 @@ router.post(
 );
 
 // Platform
+// 
 router.post('/platformRate', handleErrorAsync(platformController.platformRate));
 router.post(
   '/createModifyRate',

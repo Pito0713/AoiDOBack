@@ -6,6 +6,7 @@ const successHandler = (res, message, data = []) => {
   });
 };
 
+// 有total參數
 const successTotalHandler = (res, message, data = [], total) => {
   res.status(200).json({
     status: "success",

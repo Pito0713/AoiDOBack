@@ -1,5 +1,5 @@
 const CarouselImg = require('../models/carouselImg.model');
-const { successHandler, successTotalHandler } = require('../server/handle');
+const { successHandler } = require('../server/handle');
 const appError = require('../server/appError');
 
 exports.createCarouselImg = async (req, res, next) => {
@@ -11,18 +11,7 @@ exports.createCarouselImg = async (req, res, next) => {
     });
     successHandler(res, 'success', newCarouselImg);
   } catch (err) {
-    return next(appError(400, 'request failed', next));
-  }
-};
-
-exports.findAllCarouselImg = async (req, res, next) => {
-  try {
-    const allCarouselImg = await CarouselImg.find();
-    if (!['', null, undefined].includes(allCarouselImg)) {
-      successHandler(res, 'success', allCarouselImg);
-    }
-  } catch (err) {
-    return next(appError(404, 'Resource not found', next));
+    return next(appError(400, 'request_failed', next));
   }
 };
 
@@ -32,7 +21,7 @@ exports.uploadCarouselImg = async (req, res, next) => {
     await CarouselImg.updateOne({ _id: id }, { isActive: isActive });
     successHandler(res, 'success');
   } catch (err) {
-    return next(appError(400, '_id request failed', next));
+    return next(appError(400, 'request_failed', next));
   }
 };
 
@@ -41,24 +30,31 @@ exports.deleteOneCarouselImg = async (req, res, next) => {
     const CarouselImgId = req.params.id;
     const isCarouselImg = await CarouselImg.findById(CarouselImgId).exec();
     if (!isCarouselImg) {
-      return next(appError(404, '_id resource not found', next));
+      return next(appError(404, 'resource_not_found', next));
     }
     await CarouselImg.findByIdAndDelete(CarouselImgId);
     successHandler(res, 'success');
   } catch (err) {
-    return next(appError(400, 'request failed', next));
+    return next(appError(400, 'request_failed', next));
   }
 };
-// 取得輪播圖
+
+// 取的全部輪播圖
+exports.findAllCarouselImg = async (req, res, next) => {
+  try {
+    const allCarouselImg = await CarouselImg.find();
+    successHandler(res, 'success', allCarouselImg);
+  } catch (err) {
+    return next(appError(404, 'resource_not_found', next));
+  }
+};
+// 取得啟動輪播圖
 exports.findActiveCarouselImg = async (req, res, next) => {
   try {
-    const searchCoupon = await CarouselImg.find({
+    const searchCarousel = await CarouselImg.find({
       isActive: true,
     });
-
-    if (!['', null, undefined].includes(searchCoupon)) {
-      successTotalHandler(res, 'success', searchCoupon);
-    }
+    successHandler(res, 'success', searchCarousel);
   } catch (err) {
     return next(appError(404, 'Resource not found', next));
   }

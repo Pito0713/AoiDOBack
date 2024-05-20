@@ -15,11 +15,10 @@ exports.searchOrder = async (req, res, next) => {
     for (let i = (page - 1) * pagination; i < page * pagination; i++) {
       !searchCoupon[i] ? '' : target.push(searchCoupon[i]);
     }
-    if (!['', null, undefined].includes(searchCoupon)) {
-      successTotalHandler(res, 'success', target, searchCoupon.length);
-    }
+    successTotalHandler(res, 'success', target, searchCoupon?.length ? searchCoupon?.length : 0);
+
   } catch (err) {
-    return next(appError(404, 'Resource not found', next));
+    return next(appError(404, 'resource_not_found', next));
   }
 };
 
@@ -49,6 +48,7 @@ exports.createOrder = async (req, res, next) => {
       }
     });
 
+    // 撈出訂單中所有商品資料
     for (let i = 0; i < Object.keys(submitData.CheckOutList).length; i++) {
       const document = await Product.findOne({
         _id: submitData.CheckOutList[i].id,
@@ -56,6 +56,7 @@ exports.createOrder = async (req, res, next) => {
       submitData.ProductList.push(document);
     }
 
+    // 檢查訂單數量與庫存數量是否可下單
     const checkQuantity = (submitData) => {
       const CheckOutList = submitData.CheckOutList;
       const ProductList = submitData.ProductList;
@@ -80,6 +81,7 @@ exports.createOrder = async (req, res, next) => {
 
     if (result) {
       for (let i = 0; i < submitData.ProductList.length; i++) {
+        // 扣除下單後數量
         const newCount =
           Number(submitData.ProductList[i].quantity) -
             Number(submitData.CheckOutList[i].count) <
@@ -98,13 +100,17 @@ exports.createOrder = async (req, res, next) => {
     let targetCoupon = {};
 
     if (submitData?.selectedOption) {
+      // 找出對應的優惠卷
       targetCoupon = await Coupon.findById(submitData?.selectedOption);
       if (targetCoupon) {
         const userId = req.body.id;
         const index = targetCoupon.user.indexOf(userId);
         if (index !== -1) {
-          targetCoupon.usered.push(userId);
+          // 加入已使用的名單裡
+          targetCoupon.userEd.push(userId);
+          // 扣除數量
           targetCoupon.count = Number(targetCoupon.count) - 1;
+          // 儲存
           await targetCoupon.save();
         }
       }
@@ -113,17 +119,20 @@ exports.createOrder = async (req, res, next) => {
     let token = submitData.token;
     let ProductList = submitData.ProductList;
     ProductList.map((item, index) => {
+      // 轉換數量至訂單data中
       if (item._id == submitData.CheckOutList[index].id) {
         return (item.quantity = submitData.CheckOutList[index].count);
       }
     });
     let selectedOption = submitData.selectedOption;
     let infoData = submitData.infoData;
+    // 加總金額
     let totalPrice = ProductList.reduce((total, item) => {
       const quantity = Number(item.quantity);
       const price = Number(item.price);
       return total + quantity * price;
     }, 0);
+    // 扣除優惠卷折扣
     if (totalPrice && targetCoupon) {
       totalPrice =
         totalPrice - Number(targetCoupon.discount) >= 0
@@ -132,7 +141,7 @@ exports.createOrder = async (req, res, next) => {
     }
     let totalQuantity = ProductList.length;
 
-    const newCart = await Order.create({
+    const orderItem = await Order.create({
       token,
       ProductList,
       selectedOption,
@@ -141,7 +150,8 @@ exports.createOrder = async (req, res, next) => {
       totalQuantity,
     });
 
-    successHandler(res, 'success', newCart);
+    successHandler(res, 'success', orderItem);
+    // 清除使用者購物車
     await Cart.deleteMany({ token });
   } catch (err) {
     return next(appError(400, 'request failed', next));
@@ -153,12 +163,12 @@ exports.deleteOneOrder = async (req, res, next) => {
     const orderId = req.params.id;
     const isOrder = await Order.findById(orderId).exec();
     if (!isOrder) {
-      return next(appError(404, '_id resource not found', next));
+      return next(appError(404, 'resource_not_found', next));
     }
 
     await Order.findByIdAndDelete(isOrder._id);
     successHandler(res, 'success');
   } catch (err) {
-    return next(appError(400, 'request failed', next));
+    return next(appError(400, 'request_failed', next));
   }
 };

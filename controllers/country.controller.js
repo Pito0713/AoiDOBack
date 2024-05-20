@@ -11,6 +11,6 @@ exports.allCountry = async (req, res, next) => {
       successHandler(res, 'success', allCountry[0]);
     }
   } catch (err) {
-    return next(appError(400, 'request failed', next));
+    return next(appError(400, 'request_failed', next));
   }
 };
