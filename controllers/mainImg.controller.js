@@ -4,10 +4,11 @@ const appError = require('../server/appError');
 
 exports.createMainImg = async (req, res, next) => {
   try {
-    const { img, isActive } = req.body;
+    const { img, isActive, category } = req.body;
     const newMainImg = await MainImg.create({
       img,
       isActive,
+      category
     });
     successHandler(res, 'success', newMainImg);
   } catch (err) {

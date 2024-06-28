@@ -12,6 +12,7 @@ exports.allImage = async (req, res) => {
   }
 };
 
+// 上傳圖片
 exports.uploadImage = async (req, res) => {
   try {
     const encode_image = req.file.buffer.toString('base64');
@@ -35,7 +36,7 @@ exports.uploadImage = async (req, res) => {
       };
     });
     const newImage = await Image.create(imgData);
-    successHandler(res, 'success');
+    successHandler(res, 'success', newImage);
   } catch (error) {
     return next(appError(400, 'request_failed', next));
   }
@@ -63,7 +64,7 @@ exports.uploadWebImage = async (req, res) => {
       };
     });
     const newImage = await Image.create(imgData);
-    successHandler(res, 'success');
+    successHandler(res, 'success', newImage);
   } catch (error) {
     return next(appError(400, 'request_failed', next));
   }

@@ -109,7 +109,7 @@ exports.handPassWord = async (req, res, next) => {
       return next(appError(400, 'newPassword_failed', next));
     }
 
-    const editPassWord = await User.findByIdAndUpdate(user._id, {
+    await User.findByIdAndUpdate(user._id, {
       password: updateNewPassWord,
     });
     successHandler(res, 'success');
@@ -124,7 +124,24 @@ exports.userinfo = async (req, res, next) => {
     const { token } = req.body;
     const userId = await User.find({ token });
     if (userId) {
-      successHandler(res, 'success', userId);
+      successHandler(res, 'success', [
+        {
+          coupon: userId[0].coupon,
+          _id: userId[0]._id,
+          account: userId[0].account,
+          token: userId[0].token,
+          createdAt: userId[0].createdAt,
+          birth: userId[0].birth,
+          mail: userId[0].mail,
+          phone: userId[0].phone,
+          userName: userId[0].userName,
+          address: userId[0].address,
+          photo: userId[0].photo,
+          city: userId[0].city,
+          town: userId[0].town,
+          id: userId[0].id
+        }
+      ]);
     } else {
       return next(appError(404, 'resource_not_found', next));
     }

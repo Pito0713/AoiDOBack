@@ -10,6 +10,9 @@ const mainImgSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
     },
+    category: {
+      type: String,
+    }
   },
   {
     versionKey: false,

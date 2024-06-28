@@ -20,6 +20,7 @@ var upload = multer({
     if (
       file.mimetype === 'image/jpeg' ||
       file.mimetype === 'image/png' ||
+      file.mimetype === 'image/gif' ||
       file.mimetype === 'image/jpg'
     ) {
       cb(null, true);
@@ -50,16 +51,21 @@ router.post(
 );
 
 // Platform
-// 
+// 取得平台匯率
 router.post('/platformRate', handleErrorAsync(platformController.platformRate));
+// 新增平台匯率
 router.post(
   '/createModifyRate',
   handleErrorAsync(platformController.createModifyRate)
 );
+
+// 更新平台匯率
 router.post(
   '/updateModifyRate',
   handleErrorAsync(platformController.updateModifyRate)
 );
+
+// 刪除平台匯率
 router.delete(
   '/deleteModifyRate',
   handleErrorAsync(platformController.deleteModifyRate)
@@ -76,10 +82,12 @@ router.delete('/deleteCart', handleErrorAsync(cartController.deleteCart));
 // ProductFilter
 // 搜尋分類
 router.post('/productFilter', handleErrorAsync(productFilter.productFilter));
+// 新增分類
 router.post(
   '/createProductFilter',
   handleErrorAsync(productFilter.createProductFilter)
 );
+// 刪除商品分類
 router.delete(
   '/deleteProductFilter',
   handleErrorAsync(productFilter.deleteProductFilter)
@@ -120,6 +128,7 @@ router.delete(
 // Product
 // 搜尋全部商品
 router.post('/allProduct', handleErrorAsync(productController.allProduct));
+// 新增商品
 router.post('/addProduct', handleErrorAsync(productController.addProduct));
 // 更新商品
 router.post(
@@ -131,6 +140,7 @@ router.delete(
   '/deleteProductOne/:id',
   handleErrorAsync(productController.deleteProductOne)
 );
+// 刪除商品分類
 router.delete(
   '/deleteProductCategory',
   handleErrorAsync(productController.deleteProductCategory)
@@ -143,6 +153,7 @@ router.post(
 
 // img
 router.get('/allImage', handleErrorAsync(imageController.allImage));
+// 上傳圖片
 router.post('/uploadImage', upload.single('file'), imageController.uploadImage);
 
 // 更新網頁圖片
@@ -206,18 +217,24 @@ router.get(
 );
 
 // Main
+// 新增大綱照片
 router.post(
   '/createMainImg',
   handleErrorAsync(mainImgController.createMainImg)
 );
+// 取得大綱照片
 router.get(
   '/findAllMainImg',
   handleErrorAsync(mainImgController.findAllMainImg)
 );
+
+// 更新大綱照片
 router.patch(
   '/uploadMainImg',
   handleErrorAsync(mainImgController.uploadMainImg)
 );
+
+// 刪除大綱照片
 router.delete(
   '/deleteOneMainImg/:id',
   handleErrorAsync(mainImgController.deleteOneMainImg)
@@ -230,25 +247,34 @@ router.get(
 );
 
 // userBack
+// 後台會員註冊
 router.post(
   '/userBackRegister',
   handleErrorAsync(userBackController.userBackRegister)
 );
+
+// 後台會員登入
 router.post(
   '/userBackLogin',
   handleErrorAsync(userBackController.userBackLogin)
 );
+
+// 後台會員變更密碼
 router.post(
   '/userBackhandPassWord',
   handleErrorAsync(userBackController.userBackhandPassWord)
 );
+
+// 後台會員取得個人資料
 router.get('/userBackInfo', handleErrorAsync(userBackController.userBackInfo));
 
+// 搜尋後台會員
 router.post(
   '/findAllUserBack',
   handleErrorAsync(userBackController.findAllUserBack)
 );
 
+// 修改後台會員權限
 router.patch(
   '/uploadUserPermission',
   handleErrorAsync(userBackController.uploadUserPermission)

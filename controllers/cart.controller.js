@@ -18,24 +18,27 @@ exports.cartData = async (req, res, next) => {
       allCart[i] ? targetAllCart.push(allCart[i]) : '';
     }
 
-    if (targetAllCart.length > 0) {
-      targetAllCart.forEach((e) => {
-        let cargo = allCargo.filter((item) => item._id == e.id);
 
+    targetAllCart.forEach((e) => {
+      let cargo = allCargo.filter((item) => item._id == e.id);
+
+      if (cargo) {
         let target = {
-          category: cargo[0].category,
-          describe: cargo[0].describe,
-          imageUrl: cargo[0].imageUrl,
-          price: cargo[0].price,
-          remark: cargo[0].remark,
-          token: cargo[0].token,
-          _id: cargo[0]._id,
+          category: cargo[0]?.category,
+          describe: cargo[0]?.describe,
+          imageUrl: cargo[0]?.imageUrl,
+          price: cargo[0]?.price,
+          remark: cargo[0]?.remark,
+          token: cargo[0]?.token,
+          _id: cargo[0]?._id,
           count: e.count,
         };
-
         cartDataValue.push(target);
-      });
-    }
+      }
+
+
+    });
+
     successHandler(res, 'success', cartDataValue);
   } catch (err) {
     return next(appError(404, 'resource_not_found', next));
@@ -49,40 +52,38 @@ exports.uploadCart = async (req, res, next) => {
       return next(appError(401, 'user_certificate_error', next));
     }
     const CartList = await Cart.find({});
-    if (CartList?.length > 0) {
-      let CartItem = []
-      // 先找商品id 然後再找出token使用者的資料
-      CartItem = CartList.filter((item) => item.id == id).filter(
-        (item) => item.token == token
-      );
 
-      // 找出商品
-      const productItem = await Product.findById(id).exec();
-      const newCount = Number(productItem.quantity) - Number(count);
-      if (newCount >= 0) {
-        if (CartItem.length > 0) {
-          await Product.updateOne(
-            { _id: id },
-            { $set: { quantity: newCount } }
-          );
-          let data = { id, token, count };
-          data.count = Number(CartItem[0].count) + Number(count);
-          const editCargo = await Cart.findByIdAndUpdate(CartItem[0], data);
-          successHandler(res, 'success', editCargo);
-        } else {
-          const newCart = await Cart.create({
-            id,
-            token,
-            count,
-          });
-          successHandler(res, 'success', newCart);
-        }
+    let CartItem = []
+    // 先找商品id 然後再找出token使用者的資料
+    CartItem = CartList.filter((item) => item.id == id).filter(
+      (item) => item.token == token
+    );
+
+    // 找出商品
+    const productItem = await Product.findById(id).exec();
+    const newCount = Number(productItem.quantity) - Number(count);
+    if (newCount >= 0) {
+      if (CartItem.length > 0) {
+        await Product.updateOne(
+          { _id: id },
+          { $set: { quantity: newCount } }
+        );
+        let data = { id, token, count };
+        data.count = Number(CartItem[0].count) + Number(count);
+        const editCargo = await Cart.findByIdAndUpdate(CartItem[0], data);
+        successHandler(res, 'success', editCargo);
       } else {
-        return next(appError(404, 'stock_not_enough', next));
+        const newCart = await Cart.create({
+          id,
+          token,
+          count,
+        });
+        successHandler(res, 'success', newCart);
       }
     } else {
-      return next(appError(404, 'resource_not_found', next));
+      return next(appError(404, 'stock_not_enough', next));
     }
+
   } catch (err) {
     return next(appError(400, 'request_failed', next));
   }

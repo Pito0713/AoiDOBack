@@ -17,7 +17,8 @@ exports.allProduct = async (req, res, next) => {
         describe: { $regex: searchText },
       }
     }
-    const allProduct = await Product.find(submit);
+    const allProduct = await Product.find(submit)
+    allProduct.reverse()
     let target = [];
     if (allProduct.length > 0) {
       for (let i = (page - 1) * pagination; i < page * pagination; i++) {

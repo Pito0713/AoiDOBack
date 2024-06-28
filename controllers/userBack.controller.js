@@ -4,6 +4,7 @@ const appError = require('../server/appError');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+// 後台會員註冊
 exports.userBackRegister = async (req, res, next) => {
   try {
     const { account, password } = req.body;
@@ -13,7 +14,7 @@ exports.userBackRegister = async (req, res, next) => {
     const userBackRepeat = await UserBack.findOne({ account });
 
     if (userBackRepeat) {
-      successHandler(res, 'duplicate_user_account', '');
+      return next(appError(400, 'duplicate_user_account', next));
     }
 
     // 產生該帳號的token憑證, 用env中的金鑰
@@ -33,6 +34,7 @@ exports.userBackRegister = async (req, res, next) => {
   }
 };
 
+// 後台會員登入
 exports.userBackLogin = async (req, res, next) => {
   try {
     const { account, password } = req.body;
@@ -57,6 +59,7 @@ exports.userBackLogin = async (req, res, next) => {
   }
 };
 
+// 後台會員變更密碼
 exports.userBackhandPassWord = async (req, res, next) => {
   try {
     const { oldPassWord, newPassWord, newPassWordAgain, token } = req.body;
@@ -89,7 +92,7 @@ exports.userBackhandPassWord = async (req, res, next) => {
       return next(appError(400, 'newPassword_failed', next));
     }
 
-    const editPassWord = await UserBack.findByIdAndUpdate(userBack._id, {
+    await UserBack.findByIdAndUpdate(userBack._id, {
       password: updateNewPassWord,
     });
     successHandler(res, 'success');
@@ -112,13 +115,14 @@ exports.userBackInfo = async (req, res, next) => {
   }
 };
 
+// 搜尋後台會員
 exports.findAllUserBack = async (req, res, next) => {
   try {
     const { id } = req.body;
     const allUserBack = await UserBack.find({});
     if (!['', null, undefined].includes(allUserBack)) {
       let target = allUserBack.filter((item) => {
-        if (item._id.toString() !== id) {
+        if (item._id.toString() !== id && item.permission !== 'own') {
           return {
             id: item.id,
             permission: item.permission,
@@ -133,6 +137,7 @@ exports.findAllUserBack = async (req, res, next) => {
   }
 };
 
+// 修改後台會員權限
 exports.uploadUserPermission = async (req, res, next) => {
   try {
     const { id, permission } = req.body;
